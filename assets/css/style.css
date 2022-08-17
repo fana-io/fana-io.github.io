@@ -895,7 +895,7 @@ a:hover {
   display: -webkit-flex;
   display: -ms-flexbox;
   display: flex;
-  width: 92%;
+  width: 85%;
   max-width: 1140px;
   -webkit-box-orient: vertical;
   -webkit-box-direction: normal;
@@ -1515,7 +1515,7 @@ a:hover {
   display: -webkit-flex;
   display: -ms-flexbox;
   display: flex;
-  width: 92%;
+  width: 85%;
   max-width: 1140px;
   padding-top: 20px;
   padding-bottom: 20px;
