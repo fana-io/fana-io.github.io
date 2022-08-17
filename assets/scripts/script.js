@@ -1,4 +1,4 @@
-const words = ["lets you"];
+const words = ["safely", "confidently", "responsibly", "easily", "conveniently", "effectively"];
 let i = 0;
 
 const _changeText = () => {
