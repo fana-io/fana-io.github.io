@@ -2213,3 +2213,8 @@ iframe {
 .tab-image-wrap > img {
   width: 100%;
 }
+
+.round-shadow {
+  border-radius: 10px;
+  box-shadow: 12px 12px 7px 1px rgba(97, 96, 96, 0.621);
+}
