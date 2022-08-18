@@ -861,7 +861,7 @@ a:hover {
   display: -ms-flexbox;
   display: flex;
   padding-top: 90px;
-  padding-bottom: 90px;
+  padding-bottom: 10px;
   -webkit-box-orient: vertical;
   -webkit-box-direction: normal;
   -webkit-flex-direction: column;
@@ -983,9 +983,14 @@ a:hover {
 
 .white-paragraph {
   /* color: #b5bbbf; */
-  color: #F55454;
+  color: #15416C;
+  /* color: #F55454; */
   font-weight: 400;
   text-align: justify;
+}
+
+.emphasis-color {
+  color: #F55454;
 }
 
 .intro-paragraph {
@@ -1224,7 +1229,7 @@ a:hover {
 
 .hero-image-left {
   position: relative;
-  left: 30px;
+  left: 80px;
   /* left: 900px; */
   right: auto;
   bottom: -280px;
@@ -1236,7 +1241,7 @@ a:hover {
 
 .hero-image-right {
   position: relative;
-  right: 170px;
+  /* right: 170px; */
   width: 710px;
   border-radius: 10px;
 }
