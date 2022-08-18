@@ -1845,7 +1845,7 @@ a:hover {
     width: 233px;
   }
   .hero-image-right {
-    right: 100px;
+    /* right: 100px; */
     width: 440px;
   }
   ._404-text {
@@ -2043,7 +2043,7 @@ a:hover {
   }
 
   .hero-image-right {
-    right: 40px;
+    /* right: 40px; */
     width: 290px;
   }
 
