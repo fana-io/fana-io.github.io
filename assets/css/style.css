@@ -699,7 +699,7 @@ label {
 }
 
 .team-member-wrap img {
-
+  border-radius: 50%;
 }
 
 .team-member-info {
