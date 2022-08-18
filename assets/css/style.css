@@ -1224,14 +1224,14 @@ a:hover {
 
 .hero-image-left {
   position: relative;
-  left: 80px;
+  left: 30px;
   /* left: 900px; */
   right: auto;
-  bottom: -140px;
+  bottom: -280px;
   z-index: 2;
-  width: 350px;
+  width: 330px;
   border-radius: 10px;
-  opacity: 0.8;
+  opacity: 0.9;
 }
 
 .hero-image-right {
