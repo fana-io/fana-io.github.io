@@ -1,0 +1,577 @@
+<html>
+  <body class="c23 c40 doc-content">
+    <div>
+       <p class="c2 c3"><span class="c0"></span></p>
+    </div>
+    <p class="c36 title" id="h.855i1coabwqs"><span>F&aacute;na Case Study</span></p>
+    <h1 class="c14" id="h.n8jdi6ejyvwe"><span class="c29">1. Introduction</span></h1>
+    <p class="c2"><span>F&aacute;na is an open-source feature flag management platform that facilitates testing in production by way of enabling software developers to release new features to deliberately targeted subsets of their user base.</span><span>&nbsp;</span><span>By providing developers the means to enable new features for progressively larger subsets of their user base&ndash;starting, for example, with the most bug-tolerant users&ndash;F&aacute;na offers a tool with which to control testing in production safely and deliberately.</span></p>
+    <p class="c2 c3"><span class="c13"></span></p>
+    <p class="c2"><span class="c0">This case study will cover the tradeoffs of testing new features in production, how F&aacute;na enables it, and the engineering decisions the F&aacute;na team made during the implementation process. </span></p>
+    <h1 class="c14" id="h.cobtam2g94tw"><span>2. Testing</span></h1>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span>When introducing new features to end users, developers need a process that is optimized for the speed and reliability of the release. </span><span>Modern development teams often integrate </span><span class="c15">automated testing approaches into their deployment pipelines (such as Continuous Integration and Continuous Delivery pipelines) </span><span class="c15">to create rapid, iterative workflows in which frequent code changes can be deployed faster. </span><span>Automated testing suites can include tests that range from specific in scope, such as unit testing for single functions and components, to more broadly scoped tests that test interactions between the components of the system and prevent regression from newly merged code (e.g.integration tests and end-to-end-tests).</span></p>
+    <p class="c2 c3"><span class="c11"></span></p>
+    <p class="c1"><span class="c0">Although it took over a decade for businesses and engineers to</span></p>
+    <p class="c1"><span class="c0">appreciate automated testing, it is finally becoming a de facto standard of our</span></p>
+    <p class="c1"><span class="c0">Industry&hellip; By having a suite of automated tests, you can integrate early and release more often, making you more responsive to market needs.</span></p>
+    <p class="c28"><span>-Artur Ejsmont</span><sup><a href="#ftnt1" id="ftnt_ref1">[1]</a></sup></p>
+    <p class="c28 c3"><span class="c0"></span></p>
+    <p class="c2 c3"><span class="c11"></span></p>
+    <p class="c2"><span class="c15">Testing helps verify that an application as a whole behaves as intended and that the smaller components within the application communicate and integrate as expected</span><sup class="c15"><a href="#ftnt2" id="ftnt_ref2">[2]</a></sup><span class="c15">. In short, testing is the foundation required to &ldquo;move fast with confidence&rdquo;</span><sup class="c15"><a href="#ftnt3" id="ftnt_ref3">[3]</a></sup><span class="c15">.</span></p>
+    <h2 class="c20" id="h.kjgmcaepjvk4"><span>2.1 </span><span>Testing Before Production</span></h2>
+    <p class="c2"><span class="c11">While automated testing can prevent code regression, it does not always represent how real users may interact with a system or fully portray the environment in which the system will run. Staging environments attempt to replicate production with as high fidelity as possible to facilitate more robust and precise insight into the quality and behavior of the system at large. </span></p>
+    <p class="c2"><span style="overflow: hidden; display: inline-block; margin: 0.00px 0.00px; border: 0.00px solid #000000; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 437.50px; height: 372.30px;"><img alt="" src="images/image5.png" style="width: 437.50px; height: 372.30px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);" title=""></span></p>
+    <p class="c3 c28"><span class="c11"></span></p>
+    <p class="c2 c3"><span class="c11"></span></p>
+    <p class="c2 c3"><span class="c11"></span></p>
+    <p class="c2"><span style="overflow: hidden; display: inline-block; margin: 0.00px 0.00px; border: 0.00px solid #000000; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 624.00px; height: 214.67px;"><img alt="" src="images/image44.png" style="width: 624.00px; height: 214.67px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);" title=""></span></p>
+    <p class="c2 c3"><span class="c11"></span></p>
+    <p class="c2"><span>While the staging environment aims to replicate the production environment for pre-production testing, </span><span class="c11">many outside factors can influence the performance and quality of a system running in production that is difficult or cost-prohibitive to replicate. Examples include:</span></p>
+    <ul class="c21 lst-kix_siuooudb4i12-0 start">
+       <li class="c1 c4 li-bullet-0"><span class="c15">R</span><span class="c15">ace conditions</span></li>
+       <li class="c1 c4 li-bullet-0"><span class="c11">Unpredictable user behavior</span></li>
+       <li class="c1 c4 li-bullet-0"><span class="c11">Disparate runtime environments</span></li>
+       <li class="c1 c4 li-bullet-0"><span class="c11">Unreliable networks, including external service dependencies</span></li>
+    </ul>
+    <p class="c2 c3"><span class="c11"></span></p>
+    <p class="c28 c3"><span class="c11"></span></p>
+    <p class="c27"><span style="overflow: hidden; display: inline-block; margin: 0.00px 0.00px; border: 0.00px solid #000000; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 332.49px; height: 251.50px;"><img alt="" src="images/image23.png" style="width: 332.49px; height: 251.50px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);" title=""></span></p>
+    <p class="c2"><span>Even with robust automated testing suites and sophisticated staging environments, </span><span class="c15">the production environment still represents</span><span class="c15">&nbsp;unpredictable and irreplicable conditions</span><span class="c11">.</span></p>
+    <h2 class="c20" id="h.myjixlfshzxa"><span>2.</span><span>2 Testing in Production Responsibly</span></h2>
+    <p class="c2"><span class="c15">&nbsp;If the combination of external factors and user behavior in production environments are unique and difficult to replicate in controlled staging environments, </span><span class="c15">developers will ultimately need to gain confidence in the reliability of their release in ways that pre-production environments cannot offer</span><span class="c15">. A better way to ensure a system&rsquo;s expected performance under real user strain, i</span><span>n real network conditions is to evaluate that system in a real production environment. Deliberately testing in production, then, is a powerful tool by which developers can be wholly assured of their software and boost an application&rsquo;s resilience to survive errors and bugs.</span></p>
+    <p class="c28 c3"><span class="c11"></span></p>
+    <p class="c2"><span class="c15">However, testing in production invariably poses some risk. Any change to a system can unexpectedly disrupt that system. Deployment failures can degrade the user experience, damage the reputation of both the product and the company, expose the company to regulatory scrutiny, or negatively impact the bottom line</span><sup class="c15"><a href="#ftnt4" id="ftnt_ref4">[4]</a></sup><span class="c15">. </span></p>
+    <p class="c2 c3"><span class="c41 c30 c43"></span></p>
+    <p class="c2"><span class="c15">Developers that test </span><span class="c15">in production can leverage different tools to limit the negative outcomes in event that a new release doesn&rsquo;t behave as intended. One pattern to help mitigate these risks is to roll out changes to users gradually: releasing new code to incrementally larger portions of the user base. This approach helps limit the </span><span class="c15">blast radius</span><span class="c11">, the reach that any problematic changes might cause, by increasingly exposing those changes only as confidence permits.</span></p>
+    <p class="c2 c3"><span class="c11"></span></p>
+    <p class="c2"><span style="overflow: hidden; display: inline-block; margin: 0.00px 0.00px; border: 0.00px solid #000000; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 446.50px; height: 349.19px;"><img alt="" src="images/image42.png" style="width: 446.50px; height: 349.19px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);" title=""></span></p>
+    <p class="c2 c3"><span class="c11"></span></p>
+    <p class="c2"><span class="c15">A further evolution of that approach is structuring the stages of that incremental release pattern to target specific </span><span class="c12">types </span><span class="c11">of users or audiences. For example, a new feature can be enabled solely for developers initially, then also for a beta testing user group, then early adopters, etc., and finally to the general audience of all users. Exposing unproven portions of the application only to more bug-tolerant subsets of the user base offers a safe way to mitigate the negative outcomes of a problematic release.</span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c27"><span style="overflow: hidden; display: inline-block; margin: 0.00px 0.00px; border: 0.00px solid #000000; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 513.50px; height: 428.14px;"><img alt="" src="images/image1.png" style="width: 513.50px; height: 428.14px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);" title=""></span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span class="c23 c15">As an example of this, when cloud computing company VMware started to outgrow an important conversation view feature in their app, engineers decided it was time for a total rewrite. While implementing the changes, VMware needed both to evaluate user feedback and investigate any issues experienced by real users, while also limiting its impact to the general audience of production users.</span></p>
+    <p class="c2 c3"><span class="c11 c23"></span></p>
+    <p class="c2"><span style="overflow: hidden; display: inline-block; margin: 0.00px 0.00px; border: 0.00px solid #000000; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 484.50px; height: 487.61px;"><img alt="" src="images/image33.png" style="width: 484.50px; height: 487.61px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);" title=""></span></p>
+    <p class="c2 c3"><span class="c11 c23"></span></p>
+    <p class="c2"><span class="c15">To</span><span class="c15">&nbsp;meet their requirements, VMware chose to </span><span class="c23 c15">release improvements of their feature rewrite to only a small group of targeted users at first. The release would be open to the general audience only after iterating with those selected users. The process was executed within the context of a continuous release cadence by way of selective testing in production.</span><sup class="c23 c15"><a href="#ftnt5" id="ftnt_ref5">[5]</a></sup></p>
+    <h1 class="c14" id="h.ix6zu1yoxhol"><span class="c29">3. Possible Solutions</span></h1>
+    <p class="c2"><span class="c0">There are a few ways to target specific subsets of users with experimental features. For smaller teams looking to execute similar deployment approaches to that of VMware&rsquo;s feature rewrite, two common approaches worth considering are Multiple Deployments and Feature Flags.</span></p>
+    <h2 class="c20" id="h.8f5nora6khd4"><span>3.1 Multiple </span><span>Deployments</span></h2>
+    <p class="c2"><span>A multiple deployments strategy </span><span>consists of cloning the production environment and implementing the new feature as a separate production version. A load balancer then takes care of routing the desired users between both the original and new environments.</span><span class="c0">&nbsp;</span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span style="overflow: hidden; display: inline-block; margin: 0.00px 0.00px; border: 0.00px solid #000000; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 624.00px; height: 202.67px;"><img alt="" src="images/image25.png" style="width: 624.00px; height: 202.67px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);" title=""></span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span class="c0">This comes with the benefit of cleaner application code - since routing logic is abstracted to the load balancer, each environment is solely responsible for serving one version of the application. This ensures that the newer version of the application won&rsquo;t contain code references to older versions, which reduces the potential for tech debt. </span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span>Multiple deployment</span><span class="c0">&nbsp;strategies like canary deployments also have the benefit of zero downtime for users: if something goes wrong with the new app, developers can route all traffic to the stable version. Also, since the routing logic can be configured, users can be selectively routed to specific experiences.</span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span class="c0">There are some trade-offs to consider with multiple deployments. For example, if three new features are included in a deployment but one of the features is not performing as expected, the entire application, including the two satisfactory features, would need to be rolled back. </span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span>Additionally, deploying multiple production environments requires additional cloud or infrastructure resources since there is more than one production environment online. This adds cost and complexity to monitoring and maintaining the additional infrastructure. </span><span>As the need for more versions of deployments grows, more environments would need to be added to test different variants of the application which would compound the cost, complexity, and overhead to manage the various deployments.</span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span>The next section will explore using feature flags as an alternative approach to releasing a new feature.</span></p>
+    <h2 class="c20" id="h.hwaacsmxwow0"><span class="c9">3.2 Feature Flags</span></h2>
+    <p class="c2"><span>A feature flag strategy, at the lowest level, consists of conditional statements that determine whether or not a given block of code should be executed.</span><span>&nbsp;In more practical terms, a feature flag is a means by which to gate the execution of that code based on the context or environment in which it is evaluated</span><span>.</span><span>&nbsp;In the below example, if the `evaluateFlag` function for the `new_feature` evaluates to TRUE, the user receives the new feature; otherwise, they receive the old feature.</span><span style="overflow: hidden; display: inline-block; margin: 0.00px 0.00px; border: 0.00px solid #000000; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 624.00px; height: 196.00px;"><img alt="" src="images/image6.png" style="width: 624.00px; height: 196.00px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);" title=""></span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span class="c0">Because feature flags rely on conditional flow in the source code itself, feature flags are usually configurable remotely, meaning that the codebase can be untouched while the routing or evaluation logic changes.</span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span>As with multiple deployments, feature flags come with the benefits of zero downtime thanks to the ability to remotely toggle functionality.</span><span class="c39">&nbsp;</span><span class="c0">Additionally, since each new feature is tied to a single flag, this provides the advantage of selective rollbacks. If one out of three features is buggy, the developer can simply toggle that one feature off, while the others stay on. </span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span>Since the conditional logic lives in the code, this adds maintenance complexity to the codebase. This feature flag lifecycle requires increased coordination between teams, including the status of active and inactive flags, when old flags can be removed, and who has ownership over the governance of different flags. If not carefully managed, feature flags can contribute to significant technical debt, so proper governance is a significant consideration.</span><span class="c0">&nbsp;</span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span>In addition to governance, there&rsquo;s also the cost of </span><span class="c0">additional loading time due to the network communication required to evaluate flags, since they&rsquo;re managed remotely. </span></p>
+    <h2 class="c20" id="h.f65bbwe8zodt"><span>3.3 Comparing Multiple Deployments and Feature Flags</span></h2>
+    <p class="c2"><span>To revisit the key criteria for testing in production responsibly, the solution for a team looking to deploy a new feature with confidence needs to both facilitate strategic user group targeting and allow quick rollback of a problematic release with minimal downtime.</span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span>Further, to execute this approach as a smaller team looking to </span><span>maintain high-velocity </span><span class="c0">code deployment cycles, there are additional flexibility requirements:</span></p>
+    <ul class="c21 lst-kix_cjboqqg9hgn0-0 start">
+       <li class="c1 c4 li-bullet-0"><span class="c0">Resolving an issue with one feature shouldn&rsquo;t disrupt the deployment cycle of other changes. If possible, handling problematic features should have minimal collateral consequences for the deployment at large. </span></li>
+       <li class="c1 c4 li-bullet-0"><span class="c0">Deployments and releases should be decoupled. By decoupling feature changes deployed to production from feature changes exposed to users, developer teams can reconcile long-term development with rapid iteration, as with VMware&rsquo;s feature rewrite.</span></li>
+    </ul>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span class="c0">While feature flags introduce additional complexity to a codebase, they present some distinct advantages as a deployment tool. While both a multiple deployments strategy and feature flagging strategy can accommodate targeted release audiences and expedient rollbacks, a unique benefit of a feature flag platform is the flexibility to isolate individual features to enable or disable them as needed.</span></p>
+    <h1 class="c14" id="h.6t1vc7w0xwd3"><span class="c29">4. Feature Flags for Testing in Production</span></h1>
+    <p class="c2"><span class="c0">Feature flagging provides the ability to selectively enable and disable features in real-time, as well as the ability to designate specific audiences. This makes it a suitable tool for developers who wish to test their features in production. </span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span class="c30">There are various ways to use feature flags, including standard toggling, percentages, unique identifiers, and attribute/audience targeting.</span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <h2 class="c20" id="h.7v2aitqhlsy4"><span>4.1</span><span>&nbsp;</span><span>Standard </span><span>Toggling</span></h2>
+    <p class="c2"><span class="c0">Feature flags offer the ability to remotely toggle functionality entirely on or off. This means that the developer can use a flag to release a new feature, and if something goes wrong, it can simply be toggled off.</span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span style="overflow: hidden; display: inline-block; margin: 0.00px 0.00px; border: 0.00px solid #000000; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 538.50px; height: 401.29px;"><img alt="" src="images/image13.png" style="width: 538.50px; height: 401.29px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);" title=""></span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span>However, </span><span>this</span><span class="c0">&nbsp;new feature would be released to the entire user base. Despite the speed of remotely toggling the feature off, wholesale release to the entire user base may still not be the best option because all users are potentially impacted by any problems. A standard toggle functionality isn&rsquo;t quite enough - we need a way to narrow down the number of impacted users.</span></p>
+    <h2 class="c20" id="h.ompn4ywk96pm"><span>4.2 Perc</span><span>entage Rollout</span></h2>
+    <p class="c2"><span>One way to limit the impact is to adopt a percentage rollout strategy.</span><span class="c0">&nbsp;This means users will be randomly sorted into the available experiences based on a predetermined rate. For example, the developer can have the new feature only serve 10% of their user base, limiting the potential impact of a negative experience. </span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span style="overflow: hidden; display: inline-block; margin: 0.00px 0.00px; border: 0.00px solid #000000; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 624.00px; height: 316.00px;"><img alt="" src="images/image24.png" style="width: 624.00px; height: 316.00px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);" title=""></span></p>
+    <p class="c2"><span>While this helps,</span><span>&nbsp;percentage rollout does not provide granular control over which users will receive certain experiences</span><span>. This may be more suited for a use case like A/B testing where the developer wants to be indiscriminate about who sees the experimental feature. </span><span class="c0">A more responsible approach to testing in production would be to specifically target bug-tolerant users.</span></p>
+    <h2 class="c20" id="h.v2yc8lvjt2gw"><span class="c9">4.3 Unique Identifier</span></h2>
+    <p class="c2"><span>One way to target bug-tolerant users is to designate a flag rule to target users based on a list of unique identifiers.</span><span class="c0">&nbsp;This identifier can be anything that the developer has access to, like a user ID or IP address.</span></p>
+    <p class="c2"><span style="overflow: hidden; display: inline-block; margin: 0.00px 0.00px; border: 0.00px solid #000000; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 362.05px; height: 275.31px;"><img alt="" src="images/image29.png" style="width: 362.05px; height: 275.31px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);" title=""></span></p>
+    <p class="c2"><span>This may allow developers to target specific, bug-tolerant users at an extremely granular level, but it can become cumbersome as the target user list increases. </span><span>This can bloat the flag ruleset and make it difficult to manage when targets need to be removed.</span></p>
+    <h2 class="c20" id="h.97z197n1whb6"><span class="c9">4.4 Attributes/Segmenting</span></h2>
+    <p class="c2"><span class="c0">Feature flags can also be evaluated based on developer-defined attributes. These attributes can be general user information, session context, environment values, etc, used to conditionally execute application logic. Attributes facilitate a more flexible and granular approach by providing a means for deliberate criteria-based targeting according to whatever evaluation context values a developer chooses. </span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span>As a simple example, a developer may be trying to target west coast students for an experimental new feature. Their flag would target anyone that has their `student` attribute as `true` and their `state` attribute as either `California`, `Washington`, or `Oregon`. </span></p>
+    <p class="c2"><span style="overflow: hidden; display: inline-block; margin: 0.00px 0.00px; border: 0.00px solid #000000; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 624.00px; height: 237.33px;"><img alt="" src="images/image45.png" style="width: 624.00px; height: 237.33px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);" title=""></span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span>To take it a step further, developers can bundle multiple attribute-based rules into groups, also known as segments or audiences. Audiences are a set of rules based on those developer-defined attributes, and they offer convenient reuse of targeting criteria composed of more complexly structured or numerous attribute qualifications. This can be particularly useful when testing in production, as a single audience can be used for any flags without needing to redeclare any of the conditional attribute logic. </span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span>If the example feature flag is modified to target West Coast Students, a developer can bundle the `student` and `state` attribute together to create this audience. </span><span>Now, instead of having to set `student` to `true`, and `state` is `California`, `state` is `Washington`, or `state` is `Oregon` on every flag, developers can simply declare those requirements on the `West Coast &nbsp;Students` audience, and reuse the audience in the relevant flags. </span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span style="overflow: hidden; display: inline-block; margin: 0.00px 0.00px; border: 0.00px solid #000000; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 624.00px; height: 265.33px;"><img alt="" src="images/image15.png" style="width: 624.00px; height: 265.33px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);" title=""></span></p>
+    <p class="c2"><span class="c0">To revisit the case of VMware as a practical example, during their large feature rewrite, the development team utilized feature flags wherever the old feature was referenced in the existing code base, allowing different versions to be served to different users.</span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span class="c0">To implement this, VMware created three separate user audiences: Developers, Beta users, and general audience. Different versions of the feature were served by evaluating the respective feature flags based on which audience the user was in. This allowed the development team to test new iterations of the feature in production as they were being developed.</span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span style="overflow: hidden; display: inline-block; margin: 0.00px 0.00px; border: 0.00px solid #000000; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 624.00px; height: 402.67px;"><img alt="" src="images/image16.png" style="width: 624.00px; height: 402.67px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);" title=""></span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span>Once a feature completed the requisite internal testing, it was made available to Beta target users. This allowed VMware to collect user feedback and update the feature accordingly. Because of the size and scope of the feature, VMware iterated through several testing cycles within the </span><span>Beta </span><span>users </span><span>before moving forward to the GA stage in production. Still, even once the feature was generally available, it could be easily disabled via toggling off the associated feature flag. This would effectively revert to the pre-rewrite version of the feature while issues with the new version could be investigated and resolved.</span></p>
+    <h1 class="c14" id="h.2rm2f9wr6plw"><span class="c29">5. Implementation Options</span></h1>
+    <p class="c2"><span>There are several options for teams looking to release features to targeted audiences using a feature flagging solution: &nbsp;</span><span class="c0">DIY In-house implementations, commercial options, and open source options. Each of these options has distinct strengths and limitations. </span></p>
+    <h2 class="c20" id="h.lrnkbytj3xcz"><span>5.1 </span><span>DIY</span></h2>
+    <p class="c2"><span class="c0">One option to implement a feature flag platform is to build an in-house solution. To build one that accommodates audience-targeted releases, a DIY solution would need the following core features:</span></p>
+    <ul class="c21 lst-kix_j0hx646ebdov-0 start">
+       <li class="c1 c4 li-bullet-0"><span class="c0">Flags need to be evaluated dynamically and in real-time to execute rapid rollback of problematic features</span></li>
+       <li class="c1 c4 li-bullet-0"><span>A consistent data source to hold flag definitions and audience rules</span><span class="c0">; i.e., which users see which features</span></li>
+    </ul>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span class="c0">Architecturally, the above requirements necessitate several components to implement a minimum viable feature flagging platform:</span></p>
+    <ul class="c21 lst-kix_pchzm4qmnqy2-0 start">
+       <li class="c1 c4 li-bullet-0"><span class="c0">a persistent backend data store for flag data, audience rules, and the targeted attributes that compose those rules.</span></li>
+       <li class="c1 c4 li-bullet-0"><span class="c0">a developer interface&ndash;likely a &nbsp;CLI&ndash;by which to manage that data set: toggle flags, adjust the composition of audiences, etc.</span></li>
+       <li class="c1 c4 li-bullet-0"><span>a package embedded in the application to execute the appropriate flagged features within the application.</span></li>
+    </ul>
+    <p class="c2"><span style="overflow: hidden; display: inline-block; margin: 0.00px 0.00px; border: 0.00px solid #000000; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 624.00px; height: 668.00px;"><img alt="" src="images/image19.png" style="width: 624.00px; height: 668.00px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);" title=""></span></p>
+    <p class="c2"><span>Going the DIY route is a viable option, however, building a bootstrapped feature flagging system poses many challenges. F</span><span>or example, Atlassian built its own system primarily to control feature releases. As more teams wanted to use the in-house solution, developing and maintaining the solution became unwieldy. In addition, the system was not designed for users outside the development team. </span><span>Without a user interface, teams outside of engineering, such as Product Management, had to rely on the engineering teams to manage flags and run beta tests.</span><sup><a href="#ftnt6" id="ftnt_ref6">[6]</a></sup></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span class="c0">While building an in-house feature flagging platform provides deployment flexibility and data privacy, there&rsquo;s a significant cost in the engineering team&rsquo;s available resources to build the tool out initially. It&rsquo;s also likely that continuous work may be required to maintain and evolve the platform moving forward. </span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span>A development team that wants to leverage existing codebases to build their DIY solution could consider two notable open-source </span><span>feature flagging platforms </span><span class="c0">such as Unleash and FeatureHub. </span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span>Leveraging open-source solutions</span><sup><a href="#cmnt1" id="cmnt_ref1">[a]</a></sup><span class="c0">&nbsp;is a cost-effective way to build a customizable feature flagging platform while maintaining data ownership through self-hosting.</span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span>However, there are a few notable </span><span>tradeoffs of using open-source solutions</span><span class="c0">:</span></p>
+    <ul class="c21 lst-kix_t1lym7f0ggo-0 start">
+       <li class="c1 c4 li-bullet-0"><span class="c0">Fewer features out of the box than paid solutions (e.g. experimentation, A/B testing, workflow integrations)</span></li>
+       <li class="c1 c4 li-bullet-0"><span class="c0">Dedicated resources are needed to build and maintain the feature flag platform</span></li>
+    </ul>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span class="c0">For example, FeatureHub offers the ability to implement targeting rules based on attributes but can&#39;t group those rules into audiences. The lack of reusability results in a tedious process of manually setting up rules on each flag. Unleash does have audience targeting (they call them segments), but only as part of their paid tier plan. Therefore, building off these open source solutions still requires additional resources to implement flexible and reusable audience targeting functionality.</span></p>
+    <h2 class="c20" id="h.nh9xl3dyoonq"><span>5.2 Paid</span><span>&nbsp;Solutions</span></h2>
+    <p class="c2"><span>If the resource overhead or lead time of implementing a DIY solution is too prohibitive, there are several robust feature flag solutions on the market offering paid options. These save time and resources by providing rich and convenient functionality out of the box. There are a few options here, but two of the most popular ones o</span><span>n</span><span class="c0">&nbsp;the market are LaunchDarkly and Optimizely.</span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span class="c0">Premium solutions come with a lot of built-in support for experimentation, workflow integrations, and segment targeting. However, with these benefits come some considerations:</span></p>
+    <ul class="c21 lst-kix_w0k1il6f2v39-0 start">
+       <li class="c1 c4 li-bullet-0"><span>Paid: These enterprise solutions generally come at a monthly cost per user, which may be prohibitive to smaller companies</span></li>
+       <li class="c1 c4 li-bullet-0"><span>Not self-hosted: </span><span class="c0">Flag data and targeting rules may contain sensitive information, which can be problematic in cases where there are legal restrictions on sharing data with a third-party service</span></li>
+    </ul>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <h2 class="c20" id="h.tol0rhlykp2e"><span>5.3 </span><span class="c9">Weighing the Options</span></h2>
+    <p class="c2"><span class="c0">A developer team looking for a high degree of flexibility and customization can opt for open source solutions to bootstrap a DIY feature flag implementation or build an in-house solution completely from the ground up. While flexible and customizable, the DIY route may carry a higher cost in the way of engineering resources and time.</span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span>For broad and proven functionality out of the box, a developer team can consider enterprise solutions like LaunchDarkly. </span><span class="c0">However, some tradeoffs with using third-party services include:</span></p>
+    <ul class="c21 lst-kix_f8bhbuvkr79d-0 start">
+       <li class="c1 c4 li-bullet-0"><span class="c0">Cost: certain features like targeting specific audiences are accessible through a monthly fee.</span></li>
+       <li class="c1 c4 li-bullet-0"><span>Data privacy: Potentially exposing user data or company data to a third-party database.</span></li>
+    </ul>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span style="overflow: hidden; display: inline-block; margin: 0.00px 0.00px; border: 0.00px solid #000000; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 624.00px; height: 436.00px;"><img alt="" src="images/image28.png" style="width: 624.00px; height: 436.00px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);" title=""></span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span>For a smaller, budget-conscious developer team that needs audience targeting functionality for testing in production out of the box and prioritizes data privacy, an enterprise solution may not meet their needs</span><span class="c0">.</span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span class="c0">The next section introduces a Fana, an alternative feature flagging solution.</span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <h1 class="c14" id="h.d6zjnt3dqv3x"><span class="c29">6. F&aacute;na</span></h1>
+    <p class="c2"><span>F&aacute;na occupies a niche in between, offering the ready-made functionality of a third-party solution for</span><span>&nbsp;development teams specifically looking to utilize feature flagging to target audiences</span><span class="c0">. </span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span>F&aacute;na offers a</span><span>&nbsp;simple, straightforward frontend interface to manage flags and their audiences, making for an intuitive user experience with a minimal learning curve. Additionally, while F&aacute;na can be self-hosted to maximize data hosting flexibility, the option of automated deployment to Amazon Web Services (AWS) offers the most convenient solution to get up and running most quickly.</span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span style="overflow: hidden; display: inline-block; margin: 0.00px 0.00px; border: 0.00px solid #000000; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 624.00px; height: 342.67px;"><img alt="" src="images/image35.png" style="width: 624.00px; height: 342.67px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);" title=""></span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span class="c0">F&aacute;na allows developers to selectively serve experiences to particular audiences while allowing for remote toggling in real-time. This is particularly useful when testing in production, as developers may wish to only serve a new feature to bug-tolerant groups. If something goes wrong, developers can flip the switch to turn that feature off instantly. </span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span>To implement audience targeting via feature flags, </span><span>F&aacute;na makes use of a set of entities to describe, assess, and target users as discussed in the following sections.</span></p>
+    <h2 class="c20" id="h.b9s7z7v8h9bj"><span>6.1 </span><span class="c9">Fana&rsquo;s Entities</span></h2>
+    <p class="c2"><span>Fana has three closely related entities at its core: Attributes, Audiences, and Flags. Together, they enable Fana users to target intentional segments of users within their application.</span></p>
+    <h3 class="c10" id="h.1n5o8pc63rwe"><span>6.1.1 Attributes</span></h3>
+    <p class="c2"><span>The first entity that a F&aacute;na user would need to consider is attributes. </span><span>Attributes are qualities that serve to describe a user.</span><span class="c0">&nbsp;The values assigned to these attributes&ndash;which can be of data types strings, numbers, or booleans&ndash;are used to evaluate a user&rsquo;s eligibility against the conditions within an audience. </span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span class="c0">After creating an attribute, Fana users can include it when creating and configuring their audiences.</span></p>
+    <h4 class="c8" id="h.w5vffx8qvhq0"><span class="c19">Creating an Attribute in the Fana Dashboard</span></h4>
+    <p class="c2"><span class="c0">Below is an example of the Fana dashboard creating three new attributes, one of each data type. </span></p>
+    <p class="c2"><span class="c24 c5"><a class="c22" href="https://www.google.com/url?q=https://youtu.be/2dfDe3ZgLkg&amp;sa=D&amp;source=editors&amp;ust=1660857016313749&amp;usg=AOvVaw1Mzdwg3EkUabNMOVegA708">https://youtu.be/2dfDe3ZgLkg</a></span></p>
+    <h4 class="c8" id="h.5r5fgj9s8ypz"><span class="c19">User Context</span></h4>
+    <p class="c2"><span class="c0">A user context is an object composed of attributes-value pairs and is defined within the Fana user&rsquo;s application code to provide relevant information about a user. Note that the user context is developer-defined, so it can consist of any data that the developer has access to. For example, a user context can have attributes describing the user&rsquo;s location, age, and whether they are a student. </span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span style="overflow: hidden; display: inline-block; margin: 0.00px 0.00px; border: 0.00px solid #000000; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 490.50px; height: 172.93px;"><img alt="" src="images/image39.png" style="width: 490.50px; height: 172.93px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);" title=""></span></p>
+    <p class="c2"><span class="c0">User context is then used to assess whether a specific user satisfies the conditions to be part of the targeted audience.</span></p>
+    <h3 class="c10" id="h.7q6zydjxlqx"><span class="c7">6.1.2 Audiences and Conditions</span></h3>
+    <p class="c2"><span class="c0">Audiences are reusable collections of logical conditions. Conditions are made up of three parts: </span></p>
+    <ul class="c21 lst-kix_dxgtscjna72g-0 start">
+       <li class="c1 c4 li-bullet-0"><span class="c0">Attribute: the field in the user context described above</span></li>
+       <li class="c1 c4 li-bullet-0"><span>Target value: the value that is to be compared against the user context&rsquo;s attribute value. In the previous attribute example, the </span><span class="c41">state</span><span class="c0">&nbsp;attribute is a string, so any string value can be designated as the target value: &ldquo;CA&rdquo; or &ldquo;WA&rdquo;. </span></li>
+       <li class="c1 c4 li-bullet-0"><span class="c0">Operator: how the attribute and target value will be compared against each other. The available options differ based on the attribute&rsquo;s data type. String-typed attributes have various options, such as &ldquo;is equal to&rdquo;, &ldquo;contains&rdquo;, &ldquo;starts with&rdquo;, and can even support multiple values with the &ldquo;is in&rdquo; operator.</span></li>
+    </ul>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span>An example of a whole condition is &ldquo;</span><span class="c5">state is in CA, WA</span><span class="c0">&rdquo;. This means that any user context with a state attribute with its value as &ldquo;CA&rdquo; or &ldquo;WA&rdquo; would meet this condition.</span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span class="c0">Audiences can also configure their &lsquo;combination&rsquo;, which is how the evaluation should be handled if there is more than one condition. </span></p>
+    <ul class="c21 lst-kix_oqakwpihvfo6-0 start">
+       <li class="c1 c4 li-bullet-0"><span class="c0">If the combination is &ldquo;ANY&rdquo;, it means that the user context only needs to meet one of the conditions to qualify for this audience. </span></li>
+       <li class="c1 c4 li-bullet-0"><span class="c0">If the combination is &ldquo;ALL&rdquo;, it means that the user context must meet all conditions to qualify for this audience.</span></li>
+    </ul>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <h4 class="c8" id="h.ksylr1iiybam"><span class="c19">Creating an Audience in the Fana Dashboard</span></h4>
+    <p class="c2"><span class="c0">Below is an example of the F&aacute;na Dashboard creating a new audience called West Coast Students that has two conditions with an &ldquo;ALL&rdquo; combination. To qualify for this audience, the user context must meet all conditions: `student` attribute set to `true`, and `state` attribute set to one of &nbsp;`CA`, `WA`, or `OR`. </span></p>
+    <p class="c2"><span class="c24 c5"><a class="c22" href="https://www.google.com/url?q=https://youtu.be/8jahB63zlKk&amp;sa=D&amp;source=editors&amp;ust=1660857016316852&amp;usg=AOvVaw0Syv69KMG-HhDMOSO639b_">https://youtu.be/8jahB63zlKk</a></span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span class="c0">After creating an audience, the F&aacute;na user can target it when creating and configuring their flags. </span></p>
+    <h3 class="c10" id="h.pfitm5xvwjuk"><span class="c7">6.1.3 Flags</span></h3>
+    <p class="c2"><span class="c0">Flags are the core entity of F&aacute;na. Each flag is meant to represent a specific feature that the F&aacute;na user wishes to test. They consist of four properties:</span></p>
+    <ul class="c21 lst-kix_8k8fgokkd69k-0 start">
+       <li class="c1 c4 li-bullet-0"><span>a </span><span class="c5">title</span><span class="c0">, which helps the F&aacute;na user to easily distinguish between flags;</span></li>
+       <li class="c1 c4 li-bullet-0"><span>a </span><span class="c5">key</span><span class="c0">, the identifier string that is used to evaluate a specific flag when using the F&aacute;na SDK within the developer&rsquo;s app code;</span></li>
+       <li class="c1 c4 li-bullet-0"><span>a </span><span class="c5">toggle</span><span class="c0">, which indicates whether this flag is enabled or disabled; and</span></li>
+       <li class="c1 c4 li-bullet-0"><span>a list of </span><span class="c5">targeted audiences </span><span class="c0">for which the user context must qualify for any to evaluate TRUE for this flag.</span></li>
+    </ul>
+    <h4 class="c8" id="h.xsb9822b0a0n"><span class="c19">Creating a Flag in the Fana Dashboard</span></h4>
+    <p class="c2"><span class="c0">Below is an example of the Fana Dashboard creating a new flag to target the previously created West Coast Students audience. </span></p>
+    <p class="c2"><span class="c24 c5"><a class="c22" href="https://www.google.com/url?q=https://youtu.be/N2FZ59VGXjc&amp;sa=D&amp;source=editors&amp;ust=1660857016320170&amp;usg=AOvVaw2dGkKqX6Z00gHqTxxye1V5">https://youtu.be/N2FZ59VGXjc</a></span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span>Once a flag is created, the developer can use the flag key in their code when calling the evaluateFlag method, provided by the F&aacute;na SDK (more about SDKs in </span><span class="c24"><a class="c22" href="#h.4fll7084lxhy">section 6.5</a></span><span class="c0">). </span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span>The following sections will discuss the overall architecture, different components of </span><span>F&aacute;na design in detail, and how these components communicate within an event-driven architecture to support real-time updates and audience targeting. </span></p>
+    <h2 class="c20" id="h.4dgrgcgib6um"><span>6.2 Architecture Overview</span></h2>
+    <p class="c2"><span class="c0">F&aacute;na&rsquo;s architecture is divided into four major components: the Manager Platform, the Data store and Pub/Sub (Redis cluster), the Flag Bearer, and the F&aacute;na software development kits (SDKs). While the Manager Platform, Redis cluster, and the Flag Bearer can be containerized and hosted separately, the SDK component is embedded into the client&rsquo;s application and configured to communicate with F&aacute;na&rsquo;s Flag Bearer.</span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span class="c0">These components make up F&aacute;na&rsquo;s event-driven architecture (&ldquo;EDA&rdquo;), where events--like changes or updates to flags--are used to trigger communication between the components.</span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span class="c0">There are three key pieces to any EDA: </span></p>
+    <ul class="c21 lst-kix_7bo61m919ubf-0 start">
+       <li class="c1 c4 li-bullet-0"><span class="c0">Event producer, which generates the events</span></li>
+       <li class="c1 c4 li-bullet-0"><span class="c0">Event router, which directs the event notification to its destination</span></li>
+       <li class="c1 c4 li-bullet-0"><span class="c0">Event consumer, which uses the event notification for some purpose</span></li>
+    </ul>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span class="c0">True to EDA philosophy, F&aacute;na&rsquo;s components are designed so that each component is decoupled and can accommodate scaling.</span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span style="overflow: hidden; display: inline-block; margin: 0.00px 0.00px; border: 0.00px solid #000000; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 624.00px; height: 473.33px;"><img alt="" src="images/image14.gif" style="width: 624.00px; height: 473.33px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);" title=""></span><sup><a href="#cmnt2" id="cmnt_ref2">[b]</a></sup></p>
+    <p class="c2"><span class="c0">A general overview of the major components and their responsibilities are as follows: </span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <ul class="c21 lst-kix_wjg7tl5ylwwx-0 start">
+       <li class="c1 c4 li-bullet-0"><span class="c5">The Manager Platform </span><span class="c0">consists of the UI dashboard, which is used to manage flags and audiences. It also includes the Manager API which is in charge of handling data changes and serves the dashboard. This represents the Producer component of the EDA.</span></li>
+       <li class="c1 c4 li-bullet-0"><span class="c5">The Flag Bearer</span><span>&nbsp;manages SDK initializations, evaluates flag data for each user context, and forwards updates to the SDKs in real-time. This represents the Router component of the EDA.</span></li>
+       <li class="c1 c4 li-bullet-0"><span class="c5">The Data store </span><span class="c0">keeps a copy of the flag data from the Manager so that the Flag Bearer can use it for initializations. It also serves as the Pub/Sub service, where the Flag Bearer can subscribe to different channels for real-time updates.</span></li>
+       <li class="c1 c4 li-bullet-0"><span class="c5">The client and server-side SDK</span><span>s are embedded into the developer&rsquo;s application and are responsible for enabling flag evaluation within the app. This represents the Consumer component of the EDA.</span></li>
+    </ul>
+    <h2 class="c20" id="h.ok7wxq8477uw"><span>6.3 </span><span>Manager Platform</span></h2>
+    <p class="c2"><span>The Manager Platform serves as the single source of truth for data related to flags and consists of a dashboard user interface and the backend API server that connects to a persistent PostgreSQL database.</span><span class="c0">&nbsp;</span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span style="overflow: hidden; display: inline-block; margin: 0.00px 0.00px; border: 0.00px solid #000000; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 624.00px; height: 237.33px;"><img alt="" src="images/image4.gif" style="width: 624.00px; height: 237.33px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);" title=""></span></p>
+    <p class="c2"><span class="c0">The dashboard is the entry point for developers to the F&aacute;na feature flag platform. To utilize audience-based feature flags in their applications, developers need to first create a set of attributes, audiences, and flags through the F&aacute;na dashboard as discussed in Section 6.1. </span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span class="c0">The Manager is a Go application that serves the static files for that dashboard. It also fulfills several other responsibilities:</span></p>
+    <ul class="c21 lst-kix_db34xp6r685i-0 start">
+       <li class="c1 c4 li-bullet-0"><span class="c0">Serving the RESTful API the dashboard consumes to manage flag data.</span></li>
+       <li class="c1 c4 li-bullet-0"><span class="c0">Executing all those database operations by way of an ORM to reinforce the data model at the application layer.</span></li>
+       <li class="c1 c4 li-bullet-0"><span class="c0">Handling communication of flag data and updates to the SDK side of the architecture by publishing those messages both to the Pub/Sub and the Redis store.</span></li>
+    </ul>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c27"><span style="overflow: hidden; display: inline-block; margin: 0.00px 0.00px; border: 0.00px solid #000000; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 492.50px; height: 152.33px;"><img alt="" src="images/image9.png" style="width: 492.50px; height: 152.33px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);" title=""></span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span class="c0">While this collection of responsibilities doesn&rsquo;t strictly observe the separation of concerns principle&ndash;as, for example, serving the dashboard itself from a separate server&ndash;it didn&rsquo;t prohibitively impact the overall complexity of the application, nor limit the scaling considerations we anticipated. Ultimately the architectural simplicity afforded by bundling these responsibilities into a single service was more appropriate for F&aacute;na&rsquo;s purpose.</span></p>
+    <h2 class="c20" id="h.8tmn1vbp2a8b"><span>6.4 Flag Bearer</span></h2>
+    <p class="c2"><span>The Flag Bearer sits in between the SDK clients and the Manager Platform.</span><span class="c0">&nbsp;The Flag Bearer is responsible for managing SDK connections and evaluating flag values. </span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span class="c0">Whenever an SDK tries to make an initial connection, the Flag Bearer is responsible for verifying that the SDK key in the request is valid. It then compiles the relevant data and sends it back to the SDK.</span></p>
+    <p class="c2"><span style="overflow: hidden; display: inline-block; margin: 0.00px 0.00px; border: 0.00px solid #000000; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 624.00px; height: 377.33px;"><img alt="" src="images/image26.gif" style="width: 624.00px; height: 377.33px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);" title=""></span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span class="c0">During the initialization process, the SDK will also request to open a persistent SSE connection. The Flag Bearer keeps track of these connections so it can forward the proper updates from the Manager to the SDKs that need them. </span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span class="c0">The Flag Bearer has multiple endpoints for the SDKs to connect to:</span></p>
+    <ul class="c21 lst-kix_hemoesqmvjxp-0 start">
+       <li class="c1 c4 li-bullet-0"><span class="c0">Client-side initialization: The Flag Bearer uses the user context provided in the initialization request to pre-evaluate all flags, which are returned to the client-side SDK. </span></li>
+       <li class="c1 c4 li-bullet-0"><span class="c0">Server-side initialization: The Flag Bearer returns the full flag ruleset to the server-side SDK. Server-side SDKs evaluate flags locally at runtime.</span></li>
+       <li class="c1 c4 li-bullet-0"><span class="c0">SSE stream connection: The Flag Bearer subscribes the SDK to its respective stream (server or client-side), enabling real-time updates to flag data to be reflected in the SDKs</span></li>
+    </ul>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <h3 class="c10" id="h.8a7quuujgg7f"><span>6.4.1 </span><span class="c7">Flag Evaluation</span></h3>
+    <p class="c2"><span>When the Flag Bearer receives an initialization request specifically from a </span><span>client-side SDK,</span><span class="c0">&nbsp;the Flag Bearer must pre-evaluate the flags for the provided user context (the reasons for this are described in section 6.5.2). </span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span>The Flag Bearer starts by </span><span>fetching the full flag ruleset from the Redis data store</span><span>. If the data store is empty or down, then the Flag Bearer will request the data from the Manager backend directly. The Bearer then processes the ruleset, along with the user context provided in the request t</span><span>o generate and respond with boolean evaluations of the flags back to the client-side SDK.</span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span style="overflow: hidden; display: inline-block; margin: 0.00px 0.00px; border: 0.00px solid #000000; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 624.00px; height: 621.33px;"><img alt="" src="images/image12.png" style="width: 624.00px; height: 621.33px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);" title=""></span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span class="c0">Here&rsquo;s an example of how the evaluation logic works:</span></p>
+    <ol class="c21 lst-kix_sh51k3sf4gz2-0 start" start="1">
+       <li class="c1 c4 li-bullet-0"><span class="c0">A flag key, `experimental_page`, is selected for evaluation. </span></li>
+    </ol>
+    <ol class="c21 lst-kix_sh51k3sf4gz2-1 start" start="1">
+       <li class="c2 c34 c4 li-bullet-0"><span class="c0">This flag key contains information about its targeted audiences, including the conditions that a user must fulfill to be considered part of this audience. </span></li>
+       <li class="c2 c34 c4 li-bullet-0"><span class="c0">The`experimental_page` only has one targeted audience for simplicity.</span></li>
+    </ol>
+    <ol class="c21 lst-kix_sh51k3sf4gz2-0" start="2">
+       <li class="c1 c4 li-bullet-0"><span class="c0">The flag toggle setting is assessed.</span></li>
+    </ol>
+    <ol class="c21 lst-kix_sh51k3sf4gz2-1 start" start="1">
+       <li class="c2 c34 c4 li-bullet-0"><span>If the flag is OFF, the </span><span class="c5">`experimental_page` will not be served</span><span class="c0">.</span></li>
+       <li class="c2 c4 c34 li-bullet-0"><span class="c0">If the flag is ON, the flag&rsquo;s audience list is inspected to assess whether the user context meets the audience conditions.</span></li>
+    </ol>
+    <ol class="c21 lst-kix_sh51k3sf4gz2-0" start="3">
+       <li class="c1 c4 li-bullet-0"><span class="c0">The targeted audience has a combination indicator that determines how each audience is evaluated.</span></li>
+    </ol>
+    <ol class="c21 lst-kix_sh51k3sf4gz2-1 start" start="1">
+       <li class="c2 c34 c4 li-bullet-0"><span class="c0">The ANY combination means that the user must fulfill at least one of the conditions to be eligible.</span></li>
+       <li class="c2 c34 c4 li-bullet-0"><span class="c0">The ALL combination means that the user must fulfill ALL conditions to be eligible.</span></li>
+    </ol>
+    <ol class="c21 lst-kix_sh51k3sf4gz2-0" start="4">
+       <li class="c1 c4 li-bullet-0"><span class="c0">From there, each condition of the audience is evaluated. Depending on the combination indicator, the evaluation can be short-circuited so it doesn&rsquo;t always need to process every condition</span></li>
+    </ol>
+    <ol class="c21 lst-kix_sh51k3sf4gz2-1 start" start="1">
+       <li class="c2 c34 c4 li-bullet-0"><span>If the combination is ANY, </span><span class="c5">`experimental_page` will be served </span><span>as soon as the condition evaluates TRUE. If the user context never meets a condition, </span><span class="c5">`experimental_page` will not be served</span><span class="c0">.</span></li>
+       <li class="c2 c34 c4 li-bullet-0"><span>If the combination is ALL, if the user context meets all conditions, </span><span class="c5">`experimental_page` will be served</span><span>. However, as soon as the user context fails to meet a condition, </span><span class="c5">`experimental_page` will not be served</span><span class="c0">. </span></li>
+    </ol>
+    <p class="c2 c3"><span class="c13"></span></p>
+    <p class="c2"><span class="c0">Note that flags can have more than one audience. In these cases, if a user is not eligible for an audience, the function will continue looking at the rest of the audiences until it finds one for which the user is eligible. The user only needs to be eligible for one audience to receive a final evaluation of TRUE.</span></p>
+    <h2 class="c20" id="h.ogoq7diho1ri"><span class="c9">6.5 Redis Store and Pub/Sub</span></h2>
+    <p class="c2"><span>The purpose of the Redis Cluster in F&aacute;na&rsquo;s architecture is twofold: F&aacute;na uses Redis as a caching layer for flag data and as a message broker in a publisher/subscriber (pub/sub) model to push real-time updates to SDKs.</span><span class="c0">&nbsp;</span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span>The Redis key-value data store holds the flag data for the Flag Bearer. The Manager backend is responsible for refreshing the data store with the latest flag data whenever an update is made to a flag or audience.</span><span>&nbsp;</span><span>Whenever a change is made, the backend writes to the database and the Redis data store. The data store is accessed by the Flag Bearer when any SDK initialization requests come in.</span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span>A common pattern to facilitate uni-directional communication in event-driven architectures like Fana&rsquo;s is to utilize a message broker. Message brokers are useful intermediaries, particularly in scenarios where one component is sending messages to potentially many components in a distributed system.</span><sup><a href="#ftnt7" id="ftnt_ref7">[7]</a></sup><span>&nbsp;Fana&rsquo;s </span><span>Redis cluster also serves as a message broker to facilitate the event-driven messages between the Manager backend API service and the Flag Bearer. The primary benefit of the pub/sub model is that it decouples communications between the Manager and Flag Bearer, where the Manager publishes messages to various channels to which the Flag Bearer subscribes. A key feature of a pub/sub model is that the publisher does not need to know about any of the subscribers or do anything different for a consumer to start receiving messages. This worked well for F&aacute;na, as the Flag Bearer layer can scale without the Manager needing to know about any new Flag Bearer nodes that come online. Each Bearer node automatically subscribes to the appropriate channels and can start receiving event-driven messages immediately.</span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span>F&aacute;na&rsquo;s pub/sub implements two different message channels for flag updates: general flag updates and flag toggle updates.</span><span>&nbsp;When any changes are made to the flag resources, the Manager backend will both write to the data store and publish a message with the updated data to the Pub/Sub, which is forwarded by the Flag Bearer to existing or open SSE connections with SDKs.</span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span style="overflow: hidden; display: inline-block; margin: 0.00px 0.00px; border: 0.00px solid #000000; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 624.00px; height: 377.33px;"><img alt="" src="images/image43.gif" style="width: 624.00px; height: 377.33px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);" title=""></span></p>
+    <p class="c2"><span class="c0">When an SDK sends a request to initialize an SSE connection with the Flag Bearer, the Bearer verifies the SDK key and subscribes the client to the appropriate Pub/Sub channel based on whether it is a client-side or server-side SDK. Once the SSE connection succeeds, the SDK can receive real-time updates whenever changes to a relevant flag happen.</span></p>
+    <h2 class="c20" id="h.4fll7084lxhy"><span>6.6 </span><span>Software Development Kits (SDKs)</span></h2>
+    <p class="c2"><span>F&aacute;na provides </span><span>SDKs for React (client-side) and Node.js (server-side). </span><span>The SDKs are responsible for instilling applications with the ability to evaluate flag keys. The initialization and</span><span>&nbsp;</span><span class="c0">flag processing is quite different between the client and server SDKs, so we will discuss each separately. </span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span style="overflow: hidden; display: inline-block; margin: 0.00px 0.00px; border: 0.00px solid #000000; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 624.00px; height: 361.33px;"><img alt="" src="images/image36.gif" style="width: 624.00px; height: 361.33px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);" title=""></span></p>
+    <h3 class="c10" id="h.wnosd8x1i4lx"><span class="c7">6.6.1 Server-Side SDK</span></h3>
+    <p class="c2"><span class="c0">To initialize a server-side SDK, the developer must provide two required arguments - the server-side SDK key and the address of the Flag Bearer. Then, whenever the server is run, the SDK takes care of reaching out to the Bearer with the provided information, which verifies the SDK key. Upon verification, the Bearer sends back the entire flag ruleset, which the SDK stores in memory, ready for evaluation.</span></p>
+    <p class="c2"><span style="overflow: hidden; display: inline-block; margin: 0.00px 0.00px; border: 0.00px solid #000000; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 624.00px; height: 321.33px;"><img alt="" src="images/image47.png" style="width: 624.00px; height: 321.33px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);" title=""></span></p>
+    <p class="c2"><span class="c0">During the initialization process, the SDK will also set up an SSE connection with the Flag Bearer using the EventSource API. This allows the SDK to receive real-time updates to flag data from the Flag Bearer.</span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span class="c0">Now, the developer is ready to use the evaluateFlag method. By passing in the flag key and user context, the SDK will determine whether this particular user qualifies for this flag based on the stored ruleset, and returns true or false. There is also the option to provide a default boolean value in case the provided flag key isn&rsquo;t found, in cases of initialization failures. This evaluation process follows the same decision tree illustrated in section 6.3.1.</span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <h3 class="c10" id="h.xxtzj2o6kx1l"><span class="c7">6.6.2 Client-Side SDK</span></h3>
+    <p class="c2"><span class="c0">Initializing the client-side SDK is different due to privacy concerns (elaborated on later in this section). In addition to the key and Bearer address, the developer must also pass in the user context object. </span></p>
+    <p class="c2"><span style="overflow: hidden; display: inline-block; margin: 0.00px 0.00px; border: 0.00px solid #000000; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 624.00px; height: 366.67px;"><img alt="" src="images/image21.png" style="width: 624.00px; height: 366.67px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);" title=""></span></p>
+    <p class="c2"><span class="c0">Whenever a client instance is spun up, the client SDK, similarly to the server SDK, reaches out to the Bearer with the provided information. After verifying the SDK key, the Bearer pre-evaluates all of the flag keys using the provided user context, and only sends back a hashmap of flag keys with true and false values. This hashmap is then stored in memory in the SDK.</span></p>
+    <p class="c2"><span style="overflow: hidden; display: inline-block; margin: 0.00px 0.00px; border: 0.00px solid #000000; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 624.00px; height: 304.00px;"><img alt="" src="images/image3.png" style="width: 624.00px; height: 304.00px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);" title=""></span></p>
+    <p class="c2"><span class="c0">During the initialization process, the SDK will also set up an SSE connection with the Flag Bearer using the EventSource API. This allows the SDK to receive real-time toggle-offs from the Flag Bearer.</span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span>The pre-evaluation makes using the evaluateFlag method simpler for the client-side SDK. Instead of having to process each flag based on user context, the SDK simply needs to check the boolean value associated with the flag key since it&rsquo;s all been pre-evaluated. The developer is also able to provide a default boolean value, similar to the server-side SDK. </span><span style="overflow: hidden; display: inline-block; margin: 0.00px 0.00px; border: 0.00px solid #000000; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 624.00px; height: 332.00px;"><img alt="" src="images/image10.png" style="width: 624.00px; height: 332.00px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);" title=""></span></p>
+    <h4 class="c8" id="h.x7ro08gqldt4"><span class="c19">Pre-Evaluating Client-Side SDK Data</span></h4>
+    <p class="c2"><span class="c0">Flag targeting rules can potentially be set up with sensitive user information, such as names, email addresses, or IP addresses. This can be a concern when working with client-side SDKs, since, if targeting information is being requested on the browser, anyone can see the response. </span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span>To mitigate the exposure of sensitive user information, we designed the Flag Bearer to act as a sort of proxy for the data, as described above. </span><span class="c0">This means the only thing that the client browser receives is a list of keys and booleans, and the potentially sensitive targeting information stays hidden.</span></p>
+    <h3 class="c10" id="h.r3h3def2hkut"><span class="c7">6.6.3 SDK Keys</span></h3>
+    <p class="c2"><span class="c0">F&aacute;na users are provided two separate SDK keys within the F&aacute;na dashboard; one for the client-side SDK and one for the server-side SDK. These SDK keys are meant to be provided during the SDK initialization process for the Flag Bearer to validate the request. If the key does not match the Flag Bearer&rsquo;s key set, the connection request is denied and no data is sent.</span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <h4 class="c8" id="h.5bki2evqfua5"><span class="c19">Separate SDK Keys</span></h4>
+    <p class="c2"><span>Having separate keys for client and server-side SDKs was an important decision based on security concerns. If F&aacute;na only provided one shared SDK key, a savvy malicious end user can get the SDK key from the client-side request (the SDK key is public since it&rsquo;s a browser request). The user can then use this same SDK key to make a server-side request to fetch the full ruleset, which may contain sensitive data as described in </span><span class="c24"><a class="c22" href="#h.x7ro08gqldt4">Pre-Evaluating Client-Side SDK Data</a></span><span class="c0">. </span></p>
+    <p class="c27"><span style="overflow: hidden; display: inline-block; margin: 0.00px 0.00px; border: 0.00px solid #000000; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 459.00px; height: 288.00px;"><img alt="" src="images/image38.png" style="width: 459.00px; height: 288.00px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);" title=""></span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span class="c0">By having two separate SDK keys, the server-side SDK key should never be revealed publicly, thus keeping the sensitive user data safe. </span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span>If the server-side SDK key does end up getting compromised, the F&aacute;na dashboard offers the option to regenerate either SDK key, invaliding the current one. </span><span>The regeneration process is not to be taken lightly, as it will block any future initialization attempts until the old SDK key is replaced within the application code</span><span class="c0">. </span></p>
+    <h2 class="c20" id="h.qex8w0vzsvzb"><span class="c9">6.7 Final Architecture</span></h2>
+    <p class="c2"><span class="c0">The final architecture of Fana with the four major components shown in detail is below. &nbsp;</span></p>
+    <p class="c2"><span style="overflow: hidden; display: inline-block; margin: 0.00px 0.00px; border: 0.00px solid #000000; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 624.00px; height: 360.00px;"><img alt="" src="images/image22.gif" style="width: 624.00px; height: 360.00px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);" title=""></span></p>
+    <h2 class="c20" id="h.lkjqs8cfld8u"><span class="c30">Having established the above architecture and the responsibility of each of the components, the following section will discuss how to install F&aacute;na&rsquo;s SDKs and deploy the platform for use.</span></h2>
+    <h2 class="c20" id="h.yieqoe53h9ym"><span>6.8 Deployment</span></h2>
+    <h3 class="c10" id="h.1cvuj37jm6dn"><span class="c7">6.8.1 Docker</span></h3>
+    <p class="c2"><span class="c0">Developers who want the flexibility of self-hosting can choose to utilize F&aacute;na&rsquo;s containerized components using Docker. This option allows for F&aacute;na to be managed and deployed across any environment of the developer&rsquo;s choosing.</span></p>
+    <p class="c2"><span style="overflow: hidden; display: inline-block; margin: 0.00px 0.00px; border: 0.00px solid #000000; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 624.00px; height: 257.33px;"><img alt="" src="images/image8.png" style="width: 624.00px; height: 257.33px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);" title=""></span></p>
+    <p class="c2"><span>Developers can also deploy using F&aacute;na&rsquo;s docker-compose file, which will configure and launch the platform in a single Docker network. </span><span>In this network, the built-in DNS resolution will allow the containers to communicate with each other as required. </span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span class="c0">The docker-compose file references F&aacute;na&rsquo;s latest images for each component as well as utilizing the latest and maintained Redis and PostgreSQL images, which are defined to start up in their dependency order. Developers can configure the necessary administrative variables as well as expose necessary host and port endpoints in the environment file to deploy F&aacute;na.</span></p>
+    <p class="c2"><span style="overflow: hidden; display: inline-block; margin: 0.00px 0.00px; border: 0.00px solid #000000; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 105.45px; height: 80.40px;"><img alt="" src="images/image17.png" style="width: 105.45px; height: 80.40px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);" title=""></span><span style="overflow: hidden; display: inline-block; margin: 0.00px 0.00px; border: 0.00px solid #000000; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 296.50px; height: 127.37px;"><img alt="" src="images/image41.gif" style="width: 296.50px; height: 127.37px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);" title=""></span><span style="overflow: hidden; display: inline-block; margin: 0.00px 0.00px; border: 0.00px solid #000000; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 406.50px; height: 276.07px;"><img alt="" src="images/image7.png" style="width: 406.50px; height: 276.07px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);" title=""></span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <h3 class="c10" id="h.tx1dyr4122a4"><span class="c7">6.8.2 AWS</span></h3>
+    <p class="c2"><span>Developers who want to leverage AWS&rsquo;s managed Elastic Container Services (ECS) hosted on AWS Fargate, a serverless, pay-as-you-go compute engine, can choose to utilize F&aacute;na&rsquo;s Cloud Development Kit (CDK) App to spin up a F&aacute;na platform on the cloud.</span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span style="overflow: hidden; display: inline-block; margin: 0.00px 0.00px; border: 0.00px solid #000000; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 624.00px; height: 268.00px;"><img alt="" src="images/image27.gif" style="width: 624.00px; height: 268.00px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);" title=""></span></p>
+    <p class="c2"><span class="c0">Configuring and deploying each resource on the AWS Console can be error-prone and difficult to replicate. Instead, the cloud infrastructure can be programmatically defined in the language of one&rsquo;s choosing through the CDK framework, which allows for a much simpler and more convenient deployment process.</span></p>
+    <p class="c2"><span style="overflow: hidden; display: inline-block; margin: 0.00px 0.00px; border: 0.00px solid #000000; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 624.00px; height: 244.00px;"><img alt="" src="images/image37.png" style="width: 624.00px; height: 244.00px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);" title=""></span></p>
+    <p class="c2"><span class="c0">The F&aacute;na CDK App defines certain shared resources including the AWS Virtual Private Cloud, which defines a virtual network for the infrastructure. It also creates a new instance of Relational Database Service (RDS) to serve as the persistent database for the platform, as well as an Elasticache Redis cluster to serve as the data store and Pub/Sub.</span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span style="overflow: hidden; display: inline-block; margin: 0.00px 0.00px; border: 0.00px solid #000000; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 610.35px; height: 459.25px;"><img alt="" src="images/image48.png" style="width: 610.35px; height: 459.25px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);" title=""></span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span class="c0">The shared resources are then referenced in F&aacute;na&rsquo;s overall stack. To allow appropriate traffic through the F&aacute;na platform&rsquo;s network, a new security group is configured and created, which is referenced when creating a load-balanced Fargate Service hosting F&aacute;na&rsquo;s Manager Platform container and Flag Bearer container. Both containers reference AWS&rsquo;s public Elastic Container Registry to use the latest image. Finally, the two containers connect to RDS and/or Elasticache, respectively.</span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span class="c0">The newly created load balancer is responsible for routing traffic through the F&aacute;na platform. The load balancer is configured with listener rules to target the Manager Dashboard for incoming traffic from developers and to target the Flag Bearer for Client or Server SDK. </span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span class="c0">Finally, AWS&rsquo;s ECS is a container orchestration platform, which manages the life cycle and placement of the tasks or the instances of our docker images. However, the resource is also required to run those containers. The options for hosting the containers were: EC2 or Fargate. </span></p>
+    <p class="c31 c3"><span class="c0"></span></p>
+    <p class="c31"><span class="c0">With EC2, the developer would need to deploy and manage a cluster of EC2 instances to run the relevant containers. While this allows for greater control over the machines, it increases the developer&rsquo;s responsibility to provision, scale, and secure the EC2 instances.</span></p>
+    <p class="c31 c3"><span class="c0"></span></p>
+    <p class="c31"><span class="c0">The other option is Fargate. With Fargate, developers no longer need to manually provision and manage the compute instances. They can simply create a cluster and specify resources, and when the containers are deployed, Fargate will run and manage the servers to meet the requirements.</span></p>
+    <p class="c31 c3"><span class="c0"></span></p>
+    <p class="c31"><span class="c0">As it was important for the Fana platform to be an easily maintainable solution where the engineering team can focus more on the business needs rather than the task of managing the feature flag platform, the Fargate service was more appropriate for Fana&rsquo;s stack. </span></p>
+    <p class="c31 c3"><span class="c6"></span></p>
+    <h1 class="c14" id="h.tezpwvqrt0wi"><span class="c29">7. Engineering Decisions &amp; Tradeoffs</span></h1>
+    <h2 class="c20" id="h.w9c1t2nvx6d1"><span>7.1 SQL vs NoSQL</span></h2>
+    <h3 class="c10" id="h.fikevg6eqk5b"><span class="c7">7.1.1 MongoDB</span></h3>
+    <p class="c2"><span class="c0">The earliest iterations of F&aacute;na used MongoDB, a NoSQL document store. Initially, the lack of rigidly-defined schema helped facilitate quicker setup and data model iteration for prototyping the minimal viable product (MVP). It was also easier for the F&aacute;na team to manipulate seed data via Atlas, MongoDB&rsquo;s cloud platform, which assisted with rapid testing.</span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span class="c0">As we progressed through the implementation of our platform, we started to consider the possibility of transitioning over to a relational database model. We considered the following key characteristics of our data:</span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <ol class="c21 lst-kix_g6cg5j44960k-0 start" start="1">
+       <li class="c1 c4 li-bullet-0"><span class="c5">Consistent structure:</span><span class="c0">&nbsp;Flags contain audiences, which contain conditions, which contain attributes. </span></li>
+    </ol>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <ol class="c21 lst-kix_g6cg5j44960k-0" start="2">
+       <li class="c1 c4 li-bullet-0"><span class="c5">Highly relational: </span><span class="c0">Almost all operations executed on our data are cross-entity to serve the dashboard and the Flag Bearer. </span></li>
+    </ol>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <ol class="c21 lst-kix_g6cg5j44960k-0" start="3">
+       <li class="c1 c4 li-bullet-0"><span class="c5">High utilization of joins for CRUD operations:</span><span class="c0">&nbsp;Our data model needs to reflect relationships between dynamic entities. For example, updating an audience means that the associated flags are affected.</span></li>
+    </ol>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span>As our implementation of our data model evolved, the flexibility of MongoDB became less of an advantage, and a more intuitive expression of the relationships in our data became more attractive. While the flexibility of a document-model database made MongoDB a viable option, we decided that the data access patterns, specifically for accessing </span><span>flag entities and audience entities, lent themselves best to a relational database model.</span></p>
+    <h3 class="c10" id="h.e2sz3t99g8vk"><span class="c7">7.1.2 PostgreSQL</span></h3>
+    <p class="c2"><span class="c0">SQL databases, on the other hand, more directly supported the relational nature of our data. Strict schemas support our consistent entity models, normalized structure avoids redundancy and duplication, and optimized join queries fulfill the bulk of F&aacute;na &#39;s database operations. All of these advantages more immediately satisfied our application&#39;s data requirements.</span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span>With these facts in mind, we concluded that a relational SQL database fits our data structure well. </span><span>We went with the open source option of PostgreSQL due to its versatility and accessibility in the event we decide to expand on our data model in the future.</span></p>
+    <h2 class="c20" id="h.3aulmu9fmtot"><span>7.2 Decoupling Manager Responsibilities</span></h2>
+    <p class="c2"><span class="c0">The initial MVP design for F&aacute;na consisted of just a Flag Manager with a rudimentary dashboard and database, as well as SDKs. This loaded several responsibilities onto the Manager:</span></p>
+    <ul class="c21 lst-kix_g4f1y93girxb-0 start">
+       <li class="c1 c4 li-bullet-0"><span class="c0">Handling all database CRUD operations</span></li>
+       <li class="c1 c4 li-bullet-0"><span class="c0">Serving the dashboard</span></li>
+       <li class="c1 c4 li-bullet-0"><span class="c0">Validating SDK initialization requests</span></li>
+       <li class="c1 c4 li-bullet-0"><span class="c0">Compiling the entire flag ruleset on each SDK initialization request</span></li>
+       <li class="c1 c4 li-bullet-0"><span class="c0">Maintaining SDK SSE connections to provide real-time updates</span></li>
+    </ul>
+    <p class="c2"><span style="overflow: hidden; display: inline-block; margin: 0.00px 0.00px; border: 0.00px solid #000000; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 624.00px; height: 337.33px;"><img alt="" src="images/image31.gif" style="width: 624.00px; height: 337.33px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);" title=""></span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span class="c0">This aggregation of responsibilities presented an opportunity for decoupling. Separating concerns would reduce the overall complexity of the Manager as well as accommodate scaling individual components as needed. </span></p>
+    <h3 class="c10" id="h.broeedtvr7ul"><span class="c7">7.2.1 Decoupling SDK Communication</span></h3>
+    <p class="c2"><span class="c0">In the initial design, the Manager is responsible for SDK communication, including initializations and SSE streaming. This means that every SDK that initializes needs to request the manager to spin up properly, and the manager is also responsible for sending out an SSE stream to every connected SDK when an update is made. </span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span class="c0">As the number of connected SDKs increases, the more potential for the Manager to become inundated with requests, increasing the amount of time to turn around requests.</span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span class="c0">To offload the responsibility of SDK communication, the F&aacute;na team built the Flag Bearer component. </span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span style="overflow: hidden; display: inline-block; margin: 0.00px 0.00px; border: 0.00px solid #000000; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 624.00px; height: 356.00px;"><img alt="" src="images/image34.gif" style="width: 624.00px; height: 356.00px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);" title=""></span><span>The Flag Bearer acts as an intermediary between the SDK and the Manager. It handles the responsibility of initializing SDKs and SSE connections.</span><span>&nbsp;Since it is decoupled from the Manager, it can be scaled on its own as needed.</span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span class="c0">While adding another component to our architecture adds structural complexity, we decided that being able to ease the burden on the manager was worth it, especially since it makes scaling more feasible. </span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span class="c0">This relieves the SDK communication responsibilities from the Manager, but this setup still requires the Flag Bearer to reach out to the Manager whenever flag ruleset data is required (every initialization).</span></p>
+    <h3 class="c10" id="h.oes8epit9o0n"><span>7.2.2 </span><span class="c7">Decoupling Data Provisioning</span></h3>
+    <p class="c2"><span class="c0">The PostgreSQL database is F&aacute;na&rsquo;s source of truth and is controlled by the Manager. However, the Flag Bearer needs to read this data often to initialize SDKs, which could result in a request to the Manager for every SDK connection. </span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span>As new flags and audiences are created, the size of the overall ruleset payload increases. Since the payload needs to be sent every time an SDK initializes, this creates more work for the Manager as it needs to compile the data into the overall ruleset on every request. Larger data payloads also naturally take longer to reach their destination.</span></p>
+    <p class="c2 c3"><span class="c30 c42"></span></p>
+    <p class="c2"><span class="c0">The F&aacute;na team considered having the Flag Bearer hold its own copy of the flag ruleset data in memory. However, we decided to decouple this responsibility further for independent scaling, and so the Flag Bearer can be solely responsible for initializing and maintaining SDK connections.</span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span class="c0">Instead of having the Flag Bearer manage its own flag ruleset or reach out to the Manager every time it needed the data, we implemented a Redis cache to serve as a data store layer to reduce read requests to the database. Every time a write operation is made to the database from the developer dashboard, the Manager refreshes the cache with the latest compiled flag ruleset.</span></p>
+    <p class="c2"><span style="overflow: hidden; display: inline-block; margin: 0.00px 0.00px; border: 0.00px solid #000000; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 624.00px; height: 392.00px;"><img alt="" src="images/image46.gif" style="width: 624.00px; height: 392.00px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);" title=""></span></p>
+    <p class="c2"><span class="c0">The Flag Bearer is now able to ping the cache instead of the Manager, easing the load. The Manager&rsquo;s responsibilities have been pared down to managing flag data and serving the dashboard. The Manager only needs to compile the flag ruleset data whenever a change is made, rather than every time an SDK is initialized. </span></p>
+    <p class="c2"><span style="overflow: hidden; display: inline-block; margin: 0.00px 0.00px; border: 0.00px solid #000000; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 624.00px; height: 414.67px;"><img alt="" src="images/image11.png" style="width: 624.00px; height: 414.67px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);" title=""></span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span>We also built a degree of fault tolerance in the Redis cache workflow. If the cache is unavailable, the Flag Bearer will reach out to the Manager for a copy of the data. When a request comes from the Bearer, it necessarily implies a fault with the cache, and the Manager will attempt to repopulate it. &nbsp;</span><span>This fault tolerance </span><span class="c0">adds a layer of assurance that SDKs can still receive the necessary flag data on initializations, even if the cache is unavailable.</span></p>
+    <h2 class="c20" id="h.cj4uxtp7lwcv"><span class="c9">7.3 Communicating Between Components</span></h2>
+    <h3 class="c10" id="h.qqz9yb6pb9d"><span class="c7">7.3.1 Manager to Flag Bearer Communication</span></h3>
+    <p class="c2"><span>The Manager needs some way to communicate updates to the Flag Bearer in real-time. Three</span><span>&nbsp;options </span><span>we explored for</span><span class="c0">&nbsp;this were API requests, Webhooks, and Pub/Subs.</span></p>
+    <h4 class="c8" id="h.woxywsyc1513"><span>API Requests</span></h4>
+    <p class="c2"><span class="c6">One approach to serving the Flag Bearer would be to establish the Manager as an API server to respond to requests from the Flag Bearer. This is a well-established pattern but it came with some prohibitive tradeoffs for our needs:</span></p>
+    <ul class="c21 lst-kix_rv4gv1qq40zt-0 start">
+       <li class="c1 c4 li-bullet-0"><span class="c6">Serving every request for flag rule data compounds the responsibilities of the Manager and increases queries to the database</span></li>
+       <li class="c1 c4 li-bullet-0"><span class="c32">This model of data exchange leaves the Flag Bearer without awareness of changes to the data set. The consequence of that dynamic means the Bearer must request the rule set on every SDK request it receives to ensure consistency.</span></li>
+    </ul>
+    <p class="c2"><span style="overflow: hidden; display: inline-block; margin: 0.00px 0.00px; border: 0.00px solid #000000; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 624.00px; height: 446.67px;"><img alt="" src="images/image20.png" style="width: 624.00px; height: 446.67px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);" title=""></span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <h4 class="c8" id="h.5waoakq29chg"><span class="c19">Webhooks</span></h4>
+    <p class="c2"><span class="c0">The first iterations of F&aacute;na utilized webhooks for event-driven communication between the Manager and Flag Bearer. This facilitated more persistent data store possibilities within the Bearer with real-time event notifications. However different events&ndash;flag and audience updates versus simple flag toggle&ndash;trigger different responses, and that dynamic also imposed additional responsibilities on architecture components such as:</span></p>
+    <ul class="c21 lst-kix_q2igtm4i9yzt-0 start">
+       <li class="c1 c4 li-bullet-0"><span class="c0">Multiple URI endpoints must be known to the Manager to distinguish rule updates from toggles when updating the Bearer</span></li>
+       <li class="c1 c4 li-bullet-0"><span class="c0">Alternatively, an entire update payload could be sent for every toggle, which would impose an additional computational load on the Flag Bearer</span></li>
+    </ul>
+    <p class="c2"><span class="c0">In either scenario, ensuring message delivery becomes the responsibility of the Manager.</span></p>
+    <p class="c1"><span style="overflow: hidden; display: inline-block; margin: 0.00px 0.00px; border: 0.00px solid #000000; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 526.50px; height: 409.22px;"><img alt="" src="images/image32.png" style="width: 526.50px; height: 409.22px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);" title=""></span></p>
+    <h4 class="c8" id="h.951i6s3r7144"><span>Pub/Sub</span></h4>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span style="overflow: hidden; display: inline-block; margin: 0.00px 0.00px; border: 0.00px solid #000000; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 624.00px; height: 337.33px;"><img alt="" src="images/image30.png" style="width: 624.00px; height: 337.33px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);" title=""></span></p>
+    <p class="c2"><span class="c0">The pub/sub model is another event-driven approach that decouples the message sender from the message consumer by introducing a separate component between them. In F&aacute;na&rsquo;s case, the Manager was the publisher and the Flag Bearers were the subscribers. This architecture minimized the communication responsibilities and dependencies of those respective components:</span></p>
+    <ul class="c21 lst-kix_fqk6a5lxj16x-0 start">
+       <li class="c1 c4 li-bullet-0"><span class="c0">A lone pub/sub destination for data set updates reduces the communication responsibilities from the Manager to a single endpoint</span></li>
+       <li class="c1 c4 li-bullet-0"><span class="c0">By isolating the responsibility of message delivery to individual Bearer instances to a single message distributor, the Bearer can scale wholly independently of the Manger.</span></li>
+       <li class="c1 c4 li-bullet-0"><span class="c0">Message delivery assurance is shifted entirely to a component provisioned for the purpose.</span></li>
+       <li class="c1 c4 li-bullet-0"><span class="c0">The pub/sub model retains all the benefits of event-driven, real-time updates of the webhooks approach</span></li>
+    </ul>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <h3 class="c10" id="h.f3cqolcl8ucn"><span class="c7">7.3.2 Flag Bearer to SDK Communication</span></h3>
+    <p class="c2"><span class="c0">For the SDK to reflect real-time updates, we also need some way for SDKs to retrieve the latest set of flag data from the Flag Bearer. Three options to achieve this are polling, WebSockets, and server-sent events (SSE).</span></p>
+    <h4 class="c8" id="h.f1k03yqsh3cm"><span>Polling</span></h4>
+    <p class="c2"><span class="c0">With polling, the SDK makes requests for updated data from the Flag Bearer at a specified interval. For example, if we set the polling interval to 30 seconds, all connected SDKs will ping the Flag Bearer every 30 seconds, and the Bearer would provide each of them with the newest ruleset. </span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span style="overflow: hidden; display: inline-block; margin: 0.00px 0.00px; border: 0.00px solid #000000; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 464.50px; height: 436.96px;"><img alt="" src="images/image40.png" style="width: 464.50px; height: 436.96px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);" title=""></span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span class="c0">Since updates are only reflected at the interval points, this is not truly a real-time solution. The majority of the polling requests may end up being unnecessary since they could just be fetching the same set of data for extended periods. It may also be a significant load on the Bearer, considering that the number of connected SDKs can be quite high, depending on the company&rsquo;s traffic.</span></p>
+    <h4 class="c8" id="h.cq7kxjszogsi"><span>WebSockets</span></h4>
+    <p class="c2"><span class="c0">A WebSocket is a full-duplex (bi-directional) communication channel between a client application and a server. After the client sends a connection request to the server, they can now freely communicate.</span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span class="c0">While this does allow for real-time updates, the primary reason that we decided against WebSockets is that we do not need bi-directional communication. Only the Flag Bearer needs to relay information to the SDKs. Additionally, WebSockets will not automatically attempt to reconnect if the connection is dropped.</span></p>
+    <p class="c2"><span style="overflow: hidden; display: inline-block; margin: 0.00px 0.00px; border: 0.00px solid #000000; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 624.00px; height: 570.67px;"><img alt="" src="images/image2.png" style="width: 624.00px; height: 570.67px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);" title=""></span></p>
+    <h4 class="c8" id="h.wyxi58yu1myk"><span>SSE</span></h4>
+    <p class="c2"><span>Server-Sent Events are similar to WebSockets in that they </span><span>open a persistent connection</span><span>&nbsp;between a client and server. </span><span>However, SSEs are uni-directional which fits our use case.</span><span>&nbsp;They also have built-in support for re-establishing dropped connections. </span><span>Due to this, we chose to use SSEs as our real-time communication mechanism for sending flag updates from the Bearer to the SDKs. </span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span style="overflow: hidden; display: inline-block; margin: 0.00px 0.00px; border: 0.00px solid #000000; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 468.50px; height: 489.12px;"><img alt="" src="images/image18.png" style="width: 468.50px; height: 489.12px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);" title=""></span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <h1 class="c14" id="h.vrqablomagez"><span>8</span><span>. Summary &amp; Future Work</span></h1>
+    <p class="c2"><span>In summary, F&aacute;na provides a lightweight, easy-to-manage feature flagging platform that enables developers to test their features in production </span><span>by starting with a subset of bug-tolerant users and gradually increasing the user reach with control and confidence.</span><span>&nbsp;</span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span class="c0">The team recognizes that there is potential for improvement in F&aacute;na&rsquo;s functionality. The following are some additional improvements to consider in the future that could add value to developers utilizing F&aacute;na.</span></p>
+    <h2 class="c20" id="h.1rjnarveuywt"><span class="c9">8.1 Edge computing</span></h2>
+    <p class="c2"><span>In a future iteration of F&aacute;na&rsquo;s cloud architecture, the SDK initialization times could be optimized by leveraging edge computing via a network of servers provided by content delivery networks (CDNs). Instead of connecting to the Flag Bearer, SDKs can connect to the nearest CDN node to retrieve flag evaluations. A serverless function that runs at the edge, such as an AWS Lambda@Edge or Cloudflare Worker, could execute the evaluation logic much closer to the SDK reducing overall latency. T</span><span>his node could also access flag data closer to the edge, such as from AWS CloudFront or a Cloudflare K/V</span><span class="c0">. The result is a lower-latency round-trip for initializations, which could boost loading speeds for applications utilizing F&aacute;na.</span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span>LaunchDarkly saw a 10x improvement in connection speed performance when leveraging their CDN, from 250ms per initialization down to 25ms.</span><sup><a href="#ftnt8" id="ftnt_ref8">[8]</a></sup></p>
+    <h2 class="c20" id="h.20oycx6coqf6"><span class="c9">8.2 Multiple Environments</span></h2>
+    <p class="c2"><span class="c0">Some feature flag service providers offer the ability to create multiple environments (such as development, staging, and production) for each flag. This can be useful in situations where a developer wants to test changes to the flag&rsquo;s targeting logic in an environment without affecting the flag status that is live in the production environment.</span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span class="c0">While F&aacute;na&rsquo;s current design does not support SDK key creation for specific environments, users can still leverage F&aacute;na&rsquo;s flexibility to duplicate a flag and limit the audience to test groups. While this can be worked around via creating test flags or even rolling out another instance of the architecture, multiple environments could add more convenience for the developers. </span></p>
+    <h2 class="c20" id="h.564nuaqiw1b1"><span class="c9">8.3 Collecting metrics</span></h2>
+    <p class="c2"><span>Some </span><span>feature flag platforms offer flag-related metric collection to support more robust management of feature flags. </span><span class="c0">For example, a developer could see how many times a flag was evaluated in the code as well as the count of true or false results. The developer may also be able to see the date the flag was last evaluated.</span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <p class="c2"><span>This kind of data in a flag management platform would make it easier for developers to manage technical debt by more easily identifying feature flags that are no longer in use or do not need to remain in the codebase. Developers can create workflows to periodically remove flags from features that transition from experimental or temporary to permanent after a feature has been successfully released to the general audience for a certain amount of time. </span><span>To accommodate metric collection, a data pipeline from the SDKs to the Manager can be set up to centralize and analyze this data. </span></p>
+    <p class="c2 c3"><span class="c0"></span></p>
+    <div>
+       <p class="c3 c37"><span class="c0"></span></p>
+    </div>
+    <hr class="c33">
+    <div>
+       <p class="c17"><a href="#ftnt_ref1" id="ftnt1">[1]</a><span class="c16">&nbsp;Web Scalability for Startup Engineers p333</span></p>
+    </div>
+    <div>
+       <p class="c17"><a href="#ftnt_ref2" id="ftnt2">[2]</a><span class="c16">&nbsp;https://martinfowler.com/articles/microservice-testing/</span></p>
+    </div>
+    <div>
+       <p class="c17"><a href="#ftnt_ref3" id="ftnt3">[3]</a><span class="c16">&nbsp;https://blog.samstokes.co.uk/blog/2016/07/11/move-fast-with-confidence/</span></p>
+    </div>
+    <div>
+       <p class="c17"><a href="#ftnt_ref4" id="ftnt4">[4]</a><span class="c16">&nbsp;https://increment.com/testing/what-broke-the-bank/</span></p>
+    </div>
+    <div>
+       <p class="c17"><a href="#ftnt_ref5" id="ftnt5">[5]</a><span class="c16">&nbsp;https://medium.com/vmware-end-user-computing/using-feature-flags-to-enable-nearly-continuous-deployment-for-mobile-apps-b6d0940657ff</span></p>
+    </div>
+    <div>
+       <p class="c17"><a href="#ftnt_ref6" id="ftnt6">[6]</a><span class="c16">&nbsp;https://launchdarkly.com/case-studies/atlassian/</span></p>
+    </div>
+    <div>
+       <p class="c17"><a href="#ftnt_ref7" id="ftnt7">[7]</a><span class="c16">&nbsp;https://docs.featurehub.io/featurehub/latest/architecture.html#_nats</span></p>
+    </div>
+    <div>
+       <p class="c17"><a href="#ftnt_ref8" id="ftnt8">[8]</a><span class="c16">&nbsp;https://launchdarkly.com/blog/flag-delivery-at-edge/</span></p>
+    </div>
+ </body>
+</html>

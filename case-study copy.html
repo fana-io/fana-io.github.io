@@ -80,22 +80,12 @@
           <h2 class="h2">1 Introduction</h2>
           <br>
           <p>
-            Load tests are a critical tool for any company that wants to build and maintain robust, 
-            scalable websites and web apps. They simulate traffic hitting your servers, 
-            allowing you to measure exactly how your app performs under different load profiles.
-          </p>
-          <br>
-          <p>
-            The overall concept of load testing was born in the physical world. 
-            For example, structural engineers load test bridges before opening them to the public and power engineers load test electrical distribution systems. 
-          </p>
-          <br>
-          <p>
-            But in the world of software, load testing is the process of directing simulated traffic at any application that handles requests, 
-            be that a website, web app, API endpoint, even load balancers and caches, then measuring that software’s performance under the load.
+            F&aacute;na is an open-source feature flag management platform that facilitates testing in production by way of enabling software developers to release new features to deliberately targeted subsets of their user base. By providing developers the means to enable new features for progressively larger subsets of their user base&ndash;starting, for example, with the most bug-tolerant users&ndash;F&aacute;na offers a tool with which to control testing in production safely and deliberately.
           </p>
           <br />
-          <h3>1.1 Who’s interested in load test results?</h3>
+          <p>This case study will cover the tradeoffs of testing new features in production, how F&aacute;na enables it, and the engineering decisions the F&aacute;na team made during the implementation process.</p>  
+          <br />
+          <!-- <h3>1.1 Who’s interested in load test results?</h3>
           <br />
           <p>
             Load test results are valuable to both business stakeholders and engineering teams. 
@@ -294,723 +284,224 @@
             So the team searches for a more economical option for browser-based load testing in the cloud. 
             In short order, they come across an open source tool called Monsoon.
           </p>
-          <br />
+          <br /> -->
           <!-- Section 2 -->
-          <h2>2 Overview of Monsoon</h2>
+          <h2>2 Testing</h2>
           <br />
           <p>
-            Monsoon is a browser-based load testing platform hosted in the cloud. We built Monsoon to allow small- to medium-sized companies to load test their SPAs in a simple and scalable way, allowing them to get insights into its performance in near real time. ​
+            When introducing new features to end users, developers need a process that is optimized for the speed and reliability of the release. Modern development teams often integrate automated testing approaches into their deployment pipelines (such as Continuous Integration and Continuous Delivery pipelines) to create rapid, iterative workflows in which frequent code changes can be deployed faster. Automated testing suites can include tests that range from specific in scope, such as unit testing for single functions and components, to more broadly scoped tests that test interactions between the components of the system and prevent regression from newly merged code (e.g.integration tests and end-to-end-tests).
           </p>
-          <br/>
-          <h3>2.1 Four Key Components</h3>
           <p>
-            Monsoon uses Amazon Web Services as its cloud provider, and all the Monsoon infrastructure is deployed directly into your AWS account. This infrastructure has 4 key components: Load Generation, Transformation, Storage and Visualization. 
+            Testing helps verify that an application as a whole behaves as intended and that the smaller components within the application communicate and integrate as expected<sup class="c15"><a href="#ftnt2" id="ftnt_ref2">[2]</a></sup>. In short, testing is the foundation required to "move fast with confidence"<sup class="c15"><a href="#ftnt3" id="ftnt_ref3">[3]</a></sup>
+          </p>  
+          <h3>2.1 Testing Before Production</h3>
+          <p>
+            While automated testing can prevent code regression, it does not always represent how real users may interact with a system or fully portray the environment in which the system will run. Staging environments attempt to replicate production with as high fidelity as possible to facilitate more robust and precise insight into the quality and behavior of the system at large. 
           </p>
-          <figure>
-            <img src="assets/images/2-overview/monsoon_architecture_all.svg" class="case-study-image-large" alt="">
-            <figcaption>Fig. 2.1: Monsoon's 4 key components</figcaption>
-          </figure>
-          <br />
-          <h4>Load Generation</h3>
+          <img alt="" src="assets/images/image5.png" style="width: 288.75px; height: 245.718px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);"title="martin kelppmann quote">
           <br />
           <figure>
-            <img src="assets/images/2-overview/architecture_load_generation.svg" class="case-study-image-large" alt="">
-            <figcaption>Fig. 2.2: Load Generation architecture</figcaption>
+            <img alt="" src="assets/images/image44.png" title="staging environment">
+            <figcaption>Fig. 2.1: Testing pipeline</figcaption>
           </figure>
           <p>
-            A​t the start of the load test, Monsoon provisions multiple compute instances to generate load. The number of instances scales linearly with the needs of the test. Currently Monsoon is able to handle up to 20,000 virtual users.
+            While the staging environment aims to replicate the production environment for pre-production testing, many outside factors can influence the performance and quality of a system running in production that is difficult or cost-prohibitive to replicate. Examples include:
+            <ul>
+              <li >Race conditions</li>
+              <li >Unpredictable user behavior</li>
+              <li >Disparate runtime environments</li>
+              <li >Unreliable networks, including external service dependencies</li>
+           </ul>
+          </p>
+          <img alt="" src="assets/images/image23.png" style="width: 332.49px; height: 251.50px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);" title="charity majors quote">
+          <br />
+          <p>
+            Even with robust automated testing suites and sophisticated staging environments, the production environment still represents unpredictable and irreplicable conditions
+          </p>
+          <h3>2.2 Testing in Production Responsibly</h3>
+          <br />
+          <p>
+            If the combination of external factors and user behavior in production environments are unique and difficult to replicate in controlled staging environments, developers will ultimately need to gain confidence in the reliability of their release in ways that pre-production environments cannot offer. A better way to ensure a system’s expected performance under real user strain, in real network conditions is to evaluate that system in a real production environment. Deliberately testing in production, then, is a powerful tool by which developers can be wholly assured of their software and boost an application’s resilience to survive errors and bugs.
+          </p>
+          <p>
+            However, testing in production invariably poses some risk. Any change to a system can unexpectedly disrupt that system. Deployment failures can degrade the user experience, damage the reputation of both the product and the company, expose the company to regulatory scrutiny, or negatively impact the bottom line<sup class="c15"><a href="#ftnt4" id="ftnt_ref4">[4]</a></sup>
+          </p>
+          <p>
+            Developers that test in production can leverage different tools to limit the negative outcomes in event that a new release doesn’t behave as intended. One pattern to help mitigate these risks is to roll out changes to users gradually: releasing new code to incrementally larger portions of the user base. This approach helps limit the blast radius, the reach that any problematic changes might cause, by increasingly exposing those changes only as confidence permits.
           </p>
           <br />
           <figure>
-            <img src="assets/images/2-overview/cloud_purple.gif" class="case-study-image-large" alt="">
-            <figcaption>Fig. 2.3: Headless Chrome instances in the cloud</figcaption>
+            <img alt="" src="assets/images/image42.png" title="gradual release">
+            <figcaption>Fig. 2.2: Gradual release of features</figcaption>
           </figure>
+          <br />
           <p>
-            Inside one of these compute instances, we use a tool called Puppeteer to simulate virtual users visiting the Boost Health website. Puppeteer is a powerful, browser-based testing library for Node, distributed as an npm package. Puppeteer provides us with a high-level API that gives us full control over headless Chrome instances.
+            A further evolution of that approach is structuring the stages of that incremental release pattern to target specific types of users or audiences. For example, a new feature can be enabled solely for developers initially, then also for a beta testing user group, then early adopters, etc., and finally to the general audience of all users. Exposing unproven portions of the application only to more bug-tolerant subsets of the user base offers a safe way to mitigate the negative outcomes of a problematic release.
           </p>
-          <br/>
-          <figure>
-            <img src="assets/images/2-overview/puppeteer_virtual_user.gif" class="case-study-image-large" alt="">
-            <figcaption>Fig. 2.4: Monsoon uses Puppeteer to simulate users visiting a website</figcaption>
-          </figure>
-          <p>
-            Puppeteer is very easy to use. For example, to simulate a user filling out a form, you just pass a CSS selector and the data as arguments to the <code>type</code> method. And to simulate a user clicking a button, just pass that button’s CSS selector to the <code>click</code> method.
-          </p>
-          <br/>
-          <p>
-            Thanks to Puppeteer, Monsoon is able to abstract away a lot of the complexity of the load testing process. With Monsoon, you no longer write code to hit specific backend API endpoints. Instead, you write a simple Puppeteer script that describes the end user actions you want to simulate. Then you configure the load test by specifying the number of simulated users and the duration of the test.
-          </p>
-          <br/>
-          <p>
-            Once we have the test script and its configuration, Monsoon uses Puppeteer to create and control headless Chrome instances. Each of those Chrome instances executes the actions defined by the Boost engineers in their test script, hitting dozens or hundreds of backend API endpoints in the process.
-          </p>
-          <br/>
-          <figure>
-            <img src="assets/images/2-overview/puppeteer_load_testing.gif" class="case-study-image-large" alt="">
-            <figcaption>Fig. 2.5: Simulated users execute the test script, and Monsoon records the metrics</figcaption>
-          </figure>
-          <p>
-            Then Monsoon records performance metrics for each end user action and saves the data in JSON format. This process repeats for the duration of the load test.
-          </p>
-          <br/>
-
-          <h4>Transformation</h3>
           <br />
           <figure>
-            <img src="assets/images/2-overview/architecture_transformation.svg" class="case-study-image-large" alt="">
-            <figcaption>Fig. 2.6: Transformation architecture</figcaption>
+            <img alt="" src="assets/images/image1.png" title="targeting bug tolerant users">
+            <figcaption>Fig. 2.3: Targeting Bug-tolerant Users</figcaption>
           </figure>
-          <p>
-            This load generation step can result in a serious amount of data. A one-hour test can easily generate hundreds of millions of data records. Let’s examine how Monsoon’s transformation architecture manages all this data.
-          </p>
-          <br/>
-          <figure>
-            <img src="assets/images/2-overview/aggregation_pipeline.gif" class="case-study-image-large" alt="">
-            <figcaption>Fig. 2.7: Monsoon aggregates and stores test results</figcaption>
-          </figure>
-          <p>
-            Once we have our first raw test results ready, Monsoon performs a pre-processing step inside the compute instances. This readies the results to enter Monsoon's data pipeline, beginning the transformation step we see above. In this step, the test results for all virtual users are aggregated in increments of 15 seconds.​ These aggregated test results then need to be stored in a database.
-          </p>
-          <br/>
-
-          <h4>Storage</h3>
           <br />
-          <figure>
-            <img src="assets/images/2-overview/architecture_storage.svg" class="case-study-image-large" alt="">
-            <figcaption>Fig. 2.8: Storage Architecture</figcaption>
-          </figure>
           <p>
-            For our Storage component, we used a time-series database. This type of database is optimized for <b>time-series data</b>, which is simply data points that are ordered by timestamp. We'll talk more about time-series data and why we opted for a time-series database later in this case study.​
-          </p>
-          <br/>
-          <h4>Visualization</h3>
-          <figure>
-            <img src="assets/images/2-overview/architecture_visualization.svg" class="case-study-image-large" alt="">
-            <figcaption>Fig. 2.9: Monsoon's Weather Channel, a near real time dashboard</figcaption>
-          </figure>
-          <br/>
-          <p>
-            Test results stored in the database can be visualized using Monsoon’s Weather Channel. Weather Channel is a locally-hosted dashboard that lets you see how your site actually performed under load.
+            As an example of this, when cloud computing company VMware started to outgrow an important conversation view feature in their app, engineers decided it was time for a total rewrite. While implementing the changes, VMware needed both to evaluate user feedback and investigate any issues experienced by real users, while also limiting its impact to the general audience of production users.
           </p>
           <br/>
           <figure>
-            <img src="assets/images/2-overview/metrics.svg" class="case-study-image-full" alt="">
-            <figcaption>Fig. 2.10: Weather Channel gives you insight into the performance of your app</figcaption>
+            <img alt="" src="assets/images/image33.png" title="VMware case study">
+            <figcaption>Fig. 2.4: VMware Case Study</figcaption>
           </figure>
-          <br/>
           <p>
-            Specifically, Weather Channel allows you to track:
+            To meet their requirements, VMware chose to release improvements of their feature rewrite to only a small group of targeted users at first. The release would be open to the general audience only after iterating with those selected users. The process was executed within the context of a continuous release cadence by way of selective testing in production<sup class="c23 c15"><a href="#ftnt5" id="ftnt_ref5">[5]</a></sup>.
           </p>
-          <ul>
-            <li><b>Response time</b> - the difference in milliseconds between the start time and end time for a single end user action</li>
-            <li><b>Concurrent users</b> - the total number of virtual users making requests to the website or app under test at a single point in time</li>
-            <li><b>Transaction rate</b> - total end user actions performed per minute</li>
-            <li><b>Pass ratio</b> - ratio of the number of requests that do not generate an error to the total number of requests</li>
-          </ul>
+          <br/>
           <!-- Section 3-->
-          <h2>3 Who should use Monsoon?</h2>
+          <h2>3 Possible Solutions</h2>
           <br />
           <p>
-            Let's take a look at Boost's other browser-based load testing options.
+            There are a few ways to target specific subsets of users with experimental features. For smaller teams looking to execute similar deployment approaches to that of VMware’s feature rewrite, two common approaches worth considering are Multiple Deployments and Feature Flags.
+          </p>
+          <h3>3.1 Multiple Deployments</h3>
+          <br />
+          <p>
+            A multiple deployments strategy consists of cloning the production environment and implementing the new feature as a separate production version. A load balancer then takes care of routing the desired users between both the original and new environments. 
           </p>
           <figure>
-            <img src="assets/images/3-who_should_use_monsoon/3_1_SaaS_vs_DIY.gif" class="case-study-image-large" alt="">
-            <figcaption>Fig. 3.1: Browser-based load testing options</figcaption>
+            <img alt="" src="assets/images/image25.png" title="Multiple deployment">
+            <figcaption>Fig. 3.1: Multiple Deployment</figcaption>
           </figure>
           </br>
           <p>
-            There are two typical paths Boost might choose. The first is a cloud-based software as a service solution, like the Flood platform mentioned earlier. The second is a do-it-yourself approach, tasking the Boost engineers with building their own browser-based load testing tool.​
+            This comes with the benefit of cleaner application code - since routing logic is abstracted to the load balancer, each environment is solely responsible for serving one version of the application. This ensures that the newer version of the application won’t contain code references to older versions, which reduces the potential for tech debt.
           </p>
-          </br>
           <p>
-            Let's examine the tradeoffs for a cloud-based SaaS solution first. A platform like Flood is highly scalable, able to simulate tens or even hundreds of thousands of concurrent users. It's also generally very easy to use. It's usually a hosted platform, meaning the end user doesn't need to configure or deploy any infrastructure. This makes the overall process quite straightforward. However the downside is cost. A single test can cost thousands of dollars. And a small-to-medium sized company like Boost may have a difficult time justifying spending that much on yet another SaaS product.​
+            Multiple deployment strategies like canary deployments also have the benefit of zero downtime for users: if something goes wrong with the new app, developers can route all traffic to the stable version. Also, since the routing logic can be configured, users can be selectively routed to specific experiences.
           </p>
+          <p>
+            There are some trade-offs to consider with multiple deployments. For example, if three new features are included in a deployment but one of the features is not performing as expected, the entire application, including the two satisfactory features, would need to be rolled back. 
+          </p>
+          <p>
+            Additionally, deploying multiple production environments requires additional cloud or infrastructure resources since there is more than one production environment online. This adds cost and complexity to monitoring and maintaining the additional infrastructure. As the need for more versions of deployments grows, more environments would need to be added to test different variants of the application which would compound the cost, complexity, and overhead to manage the various deployments.
+          </p>
+          <p>
+            The next section will explore using feature flags as an alternative approach to releasing a new feature.
+          </p>
+          <h3>3.2 Feature Flags</h3>
           <br />
           <p>
-            Turning to a DIY approach, a major benefit here is that, once the platform is built, operation is much cheaper. You'll only pay for the underlying cloud infrastructure, no ongoing platform fees. However, building a distributed load testing platform requires a lot of engineering hours. Those engineering hours are expensive and would be hard to justify for a company of Boost's size. Furthermore, Boost doesn't have a huge engineering team. To build a distributed load testing tool from scratch, they'll have to pull engineers off projects that are central to their core business.​
-          </p>
-          <br/>
-          <p>
-            Neither of these options seems like a good fit for Boost. But what if there were another option? That’s where we think Monsoon fits in.
+            A feature flag strategy, at the lowest level, consists of conditional statements that determine whether or not a given block of code should be executed. In more practical terms, a feature flag is a means by which to gate the execution of that code based on the context or environment in which it is evaluated. In the below example, if the `evaluateFlag` function for the `new_feature` evaluates to TRUE, the user receives the new feature; otherwise, they receive the old feature.
           </p>
           <figure>
-            <img src="assets/images/3-who_should_use_monsoon/3_2_Solutions_comparison_table.svg">
-            <figcaption>Fig. 3.2: Monsoon's niche in the browser-based load testing space</figcaption>
+            <img alt="" src="assets/images/image6.png" title="feature flag code">
+            <figcaption>Fig 3.2 Feature Flag Code Snippet</figcaption>
           </figure>
-          <br/>
           <p>
-            Monsoon glues together all the resources needed to create a near real time load testing platform, then deploys it directly to Boost's AWS account. (Real time refers to something the end user would perceive as instantaneous.)
+            Because feature flags rely on conditional flow in the source code itself, feature flags are usually configurable remotely, meaning that the codebase can be untouched while the routing or evaluation logic changes.
           </p>
-          <br/>
           <p>
-            Thanks to its serverless nature, Monsoon is just as easy to use as existing cloud-based SaaS solutions like Flood. Additionally, since Monsoon would be deployed directly to the Boost AWS account, Boost retains ownership of its data.​
+            As with multiple deployments, feature flags come with the benefits of zero downtime thanks to the ability to remotely toggle functionality. Additionally, since each new feature is tied to a single flag, this provides the advantage of selective rollbacks. If one out of three features is buggy, the developer can simply toggle that one feature off, while the others stay on.
           </p>
-          <br/>
           <p>
-            However, Monsoon is neither as scalable nor as feature-rich as other cloud-based SaaS products or highly-customized DIY solutions. Monsoon is an open source solution intentionally optimized for small- to medium-sized companies that want to load test their SPA for up to 20,000 concurrent users.​
+            Since the conditional logic lives in the code, this adds maintenance complexity to the codebase. This feature flag lifecycle requires increased coordination between teams, including the status of active and inactive flags, when old flags can be removed, and who has ownership over the governance of different flags. If not carefully managed, feature flags can contribute to significant technical debt, so proper governance is a significant consideration.
           </p>
-          <br/>
           <p>
-            The good news is that the Monsoon team has already invested the engineering hours, so you don't have to. We also charge no platform fees. You only pay the AWS charges stemming from the infrastructure spun up to run your test. This makes Monsoon significantly more affordable than either cloud-based SaaS solutions or DIY approaches.​
+            In addition to governance, there’s also the cost of additional loading time due to the network communication required to evaluate flags, since they’re managed remotely. 
           </p>
-          <br/>
-          <!-- Section 4-->
-          <h2>4 Design Decisions</h2>
+          <h3>3.3 Comparing Multiple Deployments and Feature Flags</h3>
           <br />
           <p>
-            Early on, we made two design decisions that strongly shaped the Monsoon framework. The first was choosing to focus on high scalability. The second was striving to provide near real time results to engineers using Monsoon.
+            To revisit the key criteria for testing in production responsibly, the solution for a team looking to deploy a new feature with confidence needs to both facilitate strategic user group targeting and allow quick rollback of a problematic release with minimal downtime.
           </p>
-          </br>
-          <h3>4.1 Scalability</h3>
-          <p>We set out to build a framework able to simulate as many users as possible, for as long as possible, as cheaply as possible. To accomplish this, we focused on the scalability of the load generation engine and of the data pipeline.​</p>
-          <br/>
-          <h4>Optimizing the Load Generation Engine</h4>
-          <figure>
-            <img src="assets/images/4-design_decisions/engine_figure.svg">
-            <figcaption>Fig. 4.1: How Puppeteer stacks up against Selenium</figcaption>
-          </figure>
-          <br/>
-          <p>​We had several options for simulating virtual users via headless browser instances. Selenium is the industry default. One Selenium app instance is able to simulate 5 virtual users. We compared this to Google's Puppeteer discussed earlier. One Puppeteer app instance is able to simulate 20 virtual users.</p>
-          <p>This difference in simulated users per app instance is hugely important. Since each app instance requires its own execution environment, increasing the number of simulated users per app instance reduces the compute resources you need. And since AWS's billing model is "only pay for what you use", using compute resources more efficiently directly leads to cost savings.</p>
-          <p>By choosing Puppeteer over Selenium to generate load, we were able to test 4 times as many users for the same price.</p>
-          <br/>
-          <h4>Optimizing the Data Pipeline</h4>
-          <figure>
-            <img src="assets/images/4-design_decisions/elt_defs.svg">
-          </figure>
-          <p>Because simulating virtual users and extracting session metrics generates so much data, Monsoon naturally uses a pipeline to move data from one point to another in our system. Two common data pipeline patterns are ELT and ETL. The ‘E’ stands for Extract, the ‘L’ stands for Load and ‘T’ stands for Transform.</p>
-          <p>The choice of one pattern over the other has significant impact on scalability.</p>
-          <br/>
-          <h5>An ELT Pipeline</h5>
-          <figure>
-            <img src="assets/images/4-design_decisions/elt_diag.svg">
-            <figcaption>Fig. 4.2: An ELT data pipeline’s tradeoffs</figcaption>
-          </figure>
-          <br/>
-          <p>ELT is the current industry standard. With ELT, we load all the raw data into storage before making any changes to that data. Benefits to this approach include simplicity and flexibility. Because all the data is stored together, all transformations can be done in one place. And since you hang on to all the raw data, you're free to run further analyses and change the data's final form at any point in the future.​</p>
-          <p>But ELT has drawbacks as well. You need to transmit all data from the extraction point into storage. This can result in substantial bandwidth costs and transmission times. Furthermore, once the data is loaded into storage, you'll need to pay ongoing storage fees.</p>
-          <br/>
-          <h5>An ETL Pipeline</h5>
-          <figure>
-            <img src="assets/images/4-design_decisions/etl_diag.svg">
-            <figcaption>Fig. 4.3: An ETL data pipeline’s tradeoffs</figcaption>
-          </figure>
-          <br/>
-          <p>ETL is also an industry standard. With ETL, we transform the data between the extraction and storage points, so that we're only storing data that's already been transformed. Benefits to this approach include reduced transmission times and costs. You reduce the volume of data right after the extraction step, thus reducing the time and bandwidth costs associated with moving that data into storage. And since you're not storing your entire raw data set, storage costs are naturally reduced.​</p>
-          <p>But there are cons to ETL. The first is transformation complexity. Your data may require transformations at multiple steps along the data pipeline. This can become technically complex. The ETL pattern also lacks flexibility. Since we're only storing transformed data, we effectively lock ourselves into a final form of the data before starting the pipeline.</p>
-          <p>Another concern with ETL is data integrity. If something goes wrong in the pipeline, causing you to lose all or part of the transformed data, you don't have raw data to fall back on. The data would need to be regenerated, which may or may not be possible.</p>
-          <br/>
-          <figure>
-            <img src="assets/images/4-design_decisions/etl_overview.svg">
-            <figcaption>Fig. 4.4: Monsoon is an ETL pipeline</figcaption>
-          </figure>
-          <br/>
-          <p>Ultimately we found the ETL pattern a better fit for our use case. We were willing to deal with the transformation complexity, and final data shape lock-in actually wasn't a problem for us. Every load test Monsoon runs shows the same metrics, so the final shape of the data never changes.</p>
-          <br/>
-          <figure>
-            <img src="assets/images/4-design_decisions/etl_table.svg">
-            <figcaption>Fig. 4.5: ETL is a better fit for Monsoon</figcaption>
-          </figure>
-          <br />
-          <p>Let's quantify this difference by looking at database writes. Say we run two different load tests - each has 4000 virtual users and has the same duration and test script. If Monsoon's data pipeline were to follow the ELT pattern, the number of writes required increases by a factor of about 800. And to generate the same final graph in the local Weather Channel dashboard, 2 megabytes of information in an ETL pipeline would need to be 24 gigabytes of information in an ELT pipeline.</p>
-          <p>As we mentioned earlier, AWS uses a billing model of “only pay for what you use”. Therefore if we use less storage and transmit less data, it costs less. ​So holding the infrastructure budget constant, a user is able to run load tests that are many orders of magnitude larger since we designed Monsoon with an ETL data pipeline.​</p>
-          </br>
-          <h3>4.2 Near Real Time</h3>
-          <br />
-          <p>Now let's turn to the design decisions we made so that Monsoon can display results in near real time.​</p>
-          <p>First let's clarify some terminology. <strong>Real time data</strong> is data that's collected, processed and analyzed on a continual basis. The resulting information should be available to the end user immediately after being generated.​</p>
-          <p>And <strong>near real time</strong> is just real time, but with a delay introduced beforehand. Teams view a situation as it existed in the recent past rather than as it is right now. (Note that there isn't a precise cut off for what is or isn't considered near real time.)​</p>
-          <br />
-          <h4>Why Near Real Time?</h4>
-          <br/>
-          <p>Load tests can be really long. It's not uncommon to run a test for hours or days. Because of this, Monsoon can handle tests of arbitrary length – the limiting factor is only the user's AWS budget.​</p>
-          <p>But we don't want our users to have to wait until a test completes before they see results – we'd like them to see results as soon as possible.​</p>
-          <p>This means that Monsoon needs to extract, transform and load data into the database on a regular basis so it can be queried and displayed on the locally-hosted dashboard.​</p>
-          <br/>
-          <h4>Near Real Time Pros and Cons</h4>
-          <br/>
-          <p>But building Monsoon as a near real time framework has pros and cons.</p>
-          <figure>
-            <img src="assets/images/4-design_decisions/near_real_time_webs.svg">
-            <figcaption>Fig. 4.6: Monsoon’s near real time dashboard prevents this</figcaption>
-          </figure>
-          <br/>
-          <p>On the pro side, engineers can monitor their tests in near real time, spotting issues as they come up rather than waiting until the entire test completes. Additionally, if the load test is important enough, it can become something of an event at the company running it. While researching our project, we actually came across stories of large teams reserving conference rooms, ordering food and watching the load test results roll in live.​</p>
-          <p>But a major drawback to implementing a near real time data pipeline is the complexity. There are a lot of components, and it's technically challenging to coordinate all of them so as to avoid losing or double counting data points. We'll return to this complexity later.</p>
-          <p>Now let's move on to examine Monsoon's architecture in greater detail.</p>
-          <br/>
-          <!--Section 5-->
-          <h2>5 Monsoon's Architecture</h2>
-          <br/>
-          <figure>
-            <img src="assets/images/5-architecture/slide43.svg">
-            <figcaption>Fig. 5.1: Monsoon’s load generation architecture</figcaption>
-          </figure>
-          <br/>
-          <p>The purpose of our load generation architecture is to create a given number of virtual users, have them perform scripted actions on the target website or web app, and record metrics about those actions.​</p>
-          <br/>
-          <h3>5.1 Load Generation</h3>
-          <br/>
-          <figure>
-            <img src="assets/images/5-architecture/slide44.svg">
-            <figcaption>Fig. 5.2: Monsoon’s load generation app and its three key components</figcaption>
-          </figure>
-          <br/>
-          <p>At the core of our load generation architecture is a Node app. The app’s critical components are:​</p>
+          Further, to execute this approach as a smaller team looking to maintain high-velocity code deployment cycles, there are additional flexibility requirements:
           <ul>
-            <li>Weather Station</li>
-            <li>A user script</li>
-            <li>Runner.js</li>
+            <li>Resolving an issue with one feature shouldn’t disrupt the deployment cycle of other changes. If possible, handling problematic features should have minimal collateral consequences for the deployment at large.</li>
+            <li>Deployments and releases should be decoupled. By decoupling feature changes deployed to production from feature changes exposed to users, developer teams can reconcile long-term development with rapid iteration, as with VMware’s feature rewrite.</li>
           </ul>
-          <br/>
-          <h4>Weather Station</h4>
-          <br/>
-          <p>Engineers can use the Weather Station library to write their test script. Weather Station makes use of methods from the Performance API built into browsers and gives engineers a way to write code to measure how long individual user actions take.​</p>
-          <br/>
-          <h4>Test Script</h4>
-          <br/>
-          <p>Our next load generation component is the user's test script. It's a set of instructions describing the exact actions the headless browser instances should take and in what order. Combined with Puppeteer, this test script is what allows Monsoon to program a virtual user.</p>
-          <p>For example, returning to the engineers at Boost Health, their user test script might instruct the headless browser instance to load the main Boost Health webpage, wait two seconds, load a product details page, wait 10 seconds, then click the "Add to Cart" button.</p>
-          <br/>
-          <h4>Runner</h4>
-          <br/>
-          <p><code>Runner.js</code> is a coordination script. It creates 20 headless Chrome instances controlled by Puppeteer to simulate 20 virtual users. <code>Runner.js</code> then instructs each virtual user to execute the commands listed in the user's test script and stores the resulting session metrics for each of those virtual user actions.​</p>
-          <p>To summarize, our Node app creates virtual users, instructs them to perform actions, and saves metric data about the actions taken.​</p>
-          <p>But how do we actually run the app? We use AWS ECS and Fargate.</p>
-          <br/>
-          <h4>Fargate and ECS</h4>
-          <br/>
-          <figure>
-            <img src="assets/images/5-architecture/slide49.svg">
-            <figcaption>Fig. 5.3: Monsoon’s load generation app runs on Fargate and uses ECS</figcaption>
-          </figure>
-          <br/>
-          <p>AWS Fargate is a serverless, pay-as-you-go compute engine that allows you to focus on building applications without managing servers. In effect, it's an AWS service that runs containerized applications.</p>
-          <p>To run our app and scale to more than 20 users, we containerized our Node app and passed it to ECS, the Elastic Container Service. ECS is used for container orchestration.​</p>
-          <p>For every block of 20 virtual users we wish to simulate, ECS spins up an additional Fargate instance to execute our containerized Node app.​ For example, to simulate 4000 users, ECS spins up 200 Fargate instances, each of which each of which executes one instance of our containerized app.​</p>
-          <p>So now that our load generation process has yielded session data for our virtual users, what do we do with it?</p>
-          <br/>
-          <h3>5.2 Transformation</h3>
-          <br/>
-          <figure>
-            <img src="assets/images/5-architecture/slide51.svg">
-            <figcaption>Fig. 5.4: Monsoon’s transformation architecture</figcaption>
-          </figure>
-          <br/>
-          <p>To answer this, let's take a closer look at our Transformation architecture. At a high-level, the Transformation architecture takes the session metric data stored on each Fargate instance, transforms it into a time series data format, then loads it into a time series database.​</p>
-          <p>A key piece of the Transformation component is our normalization logic. Before we dive into the details, let's clarify our definition of "normalization" since it can be a slippery term in the data science world.</p>
-          <p><strong>What is “normalization” exactly?</strong></p>
-          <p>We consider it a pre-processing step that facilitates data aggregation. When we normalize raw data, we're taking multiple data points with different raw timestamps and combining them into a single data point with one normalized timestamp. If you think of calculating a moving average, that's a good mental model.​</p>
-          <br/>
-          <figure>
-            <img src="assets/images/5-architecture/arch_normalizer_process.gif">
-            <figcaption>Fig. 5.5: Think of “normalization” as calculating a moving average</figcaption>
-          </figure>
-          <br/>
-          <h4>Normalizer.js</h4>
-          <br/>
-          <p>Earlier we mentioned that the <code>runner.js</code> file in our Node app stores session metrics from every virtual user action. We're storing these metrics by temporarily saving them to the local filesystems of the Fargate instances.</p>
-          <br/>
-          <figure>
-            <img src="assets/images/5-architecture/slide52.svg">
-            <figcaption>Fig. 5.6: Monsoon’s Normalizer.js script transforms metrics and moves them to an S3 bucket</figcaption>
-          </figure>
-          <br/>
-          <p>Alongside our load generation scripts, the Node app also runs a file called <code>Normalizer.js</code>. <code>Normalizer.js</code> polls the Fargate instance's local filesystem for new session metric data every 15 seconds. The <code>Normalizer.js</code> code applies transformations to any data it finds, then moves the transformed data to an S3 bucket for more permanent storage. This normalization step is necessary because the aggregation step that follows requires uniform timestamps.​</p>
-          <p>So the core logic of <code>Normalizer.js</code> groups the session metric data by time window. And a happy side effect of our normalization process is that we preserve statistical significance while minimizing data size.​</p>
-          <br/>
-          <h4>S3 Bucket</h4>
-          <br/>
-          <figure>
-            <img src="assets/images/5-architecture/slide54.svg">
-            <figcaption>Fig. 5.7: Monsoon’s S3 bucket stores normalized test results data</figcaption>
-          </figure>
-          <br/>
-          <p>Now let's examine our destination S3 bucket more closely.</p>
           <p>
-            The data processed by <code>Normalizer.js</code> is saved in an S3 bucket. AWS Simple Storage Service (AWS S3) is a serverless and highly scalable object storage service. We temporarily stage the data in S3 for two reasons:
+            While feature flags introduce additional complexity to a codebase, they present some distinct advantages as a deployment tool. While both a multiple deployments strategy and feature flagging strategy can accommodate targeted release audiences and expedient rollbacks, a unique benefit of a feature flag platform is the flexibility to isolate individual features to enable or disable them as needed.
           </p>
-          <br/>
-          <ol>
-            <li>
-              <p>
-                It serves as temporary storage for the normalized test results. For any given action and timestamp, data can't be aggregated until the metrics of all virtual users have been normalized. We use the S3 bucket to stage these results until the Transformation engine has all the files needed to start the aggregation process; and
-              </p>
-            </li>
-            <li>
-              <p>
-                It decouples the Transformation process from the Load Generation process. A test with thousands of users can generate such a massive amount of data that it overwhelms the Transformation component. The S3 bucket then acts as a dam, stopping the flood of data and allowing the Transformation engine to process the data at its own pace.
-              </p>
-            </li>
-          </ol>
-          <br/>
-          <figure>
-            <img src="assets/images/5-architecture/s3_dam.svg" class="case-study-image-large">
-            <figcaption>Fig. 5.8: Monsoon’s S3 Bucket decouples Transformation from Load Generation</figcaption>
-          </figure>
-          <p>Once metrics sent by <code>Normalizer.js</code> start hitting the S3 bucket, the S3 bucket will contain files organized based on timestamp, end user action and Fargate instance name. For a given end user action, a single file represents the metrics for all virtual users on one Fargate instance within a single 15-second time window.</p>
-          <br/>
-          <figure>
-            <img src="assets/images/5-architecture/slide55.svg">
-            <figcaption>Fig. 5.8: Structure of one test result file</figcaption>
-          </figure>
-          <br/>
-          <p>For example, in the figure above, the JSON file contains metrics from all 20 virtual users on the "mi_W8ni" Fargate instance for the "Click first link" action at the Unix timestamp listed.​</p>
-          <p>But even in this transformed state, the data currently sitting in the S3 bucket isn't appropriately formatted for a time series database. So we'll need another transformation step, this time involving an AWS Lambda function.​</p>
-          <br/>
-          <h4>Aggregating Lambda</h4>
-          <br/>
-          <figure>
-            <img src="assets/images/5-architecture/slide56.svg">
-            <figcaption>Fig. 5.9: Monsoon’s Aggregating Lambda</figcaption>
-          </figure>
-          <br/>
-          <p>AWS Lambda is a serverless, event-driven compute service. It's similar to Fargate. But while Fargate runs entire apps in a serverless environment, Lambda runs individual serverless functions.​</p>
-          <p>
-            At a high level, every one minute, our Aggregating Lambda function polls the S3 bucket to determine if any new data has arrived. For each new timestamp, the lambda aggregates all the metrics in the JSON files with that timestamp, creating a single time series data point. Then we <code>POST</code> that data point to the time series database.
-          </p>
-          <figure>
-            <img src="assets/images/5-architecture/aggregation_process.gif" class="case-study-image">
-            <figcaption>Fig. 5.10: How metrics are aggregated by timestamp</figcaption>
-          </figure>
-          <br/>
-          <p>
-            But let’s clarify this high-level summary a bit. A given timestamp is ready to be processed 3 minutes after its creation. Processing begins by spinning up an instance of the Aggregating Lambda. That lambda grabs all JSON files from the S3 bucket whose timestamp matches the given timestamp and aggregates all those metrics into a single time series data point. The lambda then <code>POST</code>s that data point to the time series database.
-          </p>
-          <br/>
-          <p>
-            This timestamp processing is batched. Every 1 minute, events are fired - one event per ready timestamp. For each of these events, a new Aggregating Lambda instance is spun up. The mechanism needed to generate these events is complex and requires the assistance of another lambda, playing the role of orchestrator. We call this the Metronome Lambda, and we’ll discuss it more in section 7.2 below.
-          </p>
-          <br/>
-          <figure>
-            <img src="assets/images/5-architecture/metronone_lambda_presentation.svg" class="case-study-image-large">
-            <figcaption>Fig. 5.11: The Metronome Lambda orchestrates the transformation process.</figcaption>
-          </figure>
-          <h3>5.3 Storage</h3>
-          <br/>
-          <figure>
-            <img src="assets/images/5-architecture/slide58.svg">
-            <figcaption>Fig. 5.12: Monsoon’s Storage Component.</figcaption>
-          </figure>
-          <br/>
-          <p>Now let's examine the Storage component of Monsoon's architecture. Its purpose is to appropriately store the data generated during the Transformation step.</p>
-          <p>As with any system, this data should be stored in a format that lends itself to the data's shape and access patterns. In Monsoon's case, a good fit is the time series data format.​</p>
-          <br/>
-          <h4>What is Time Series Data?</h4>
-          <br/>
-          <p>A <strong>time series</strong> is a series of data points that are ordered chronologically. They're excellent at tracking change over time. Examples include stock charts, ocean tidal charts and line charts in Excel.​</p>
-          <br/>
-          <figure>
-            <img src="assets/images/5-architecture/slide59.svg">
-            <figcaption>Fig. 5.13: Time series data tracks change over time</figcaption>
-          </figure>
-          <br/>
-          <p>With Monsoon, we generate synthetic load on a website and track session metrics as the test progresses. End users are looking to track how key metrics like page load response times change over time. This type of data naturally lends itself to the time series format.</p>
-          <br/>
-          <h4>Which Time Series Database?</h4>
-          <br/>
-          <p>There are many time series database options available, but we chose to go with AWS Timestream. Timestream is a fast and scalable serverless time series database service that makes it easy to store and analyze trillions of events per day.​ Timestream can be up to 1000 times faster than a relational database and as little as 10% of the cost.​</p>
-          <p>Timestream is a database service, therefore users don't host Timestream themselves. Instead, they connect to the Timestream service, then create tables within the service. Each table contains one or more related time series.</p>
-          <br/>
-          <figure>
-            <img src="assets/images/5-architecture/slide61.svg">
-            <figcaption>Fig. 5.14: Records in Monsoon’s Timestream database</figcaption>
-          </figure>
-          <br/>
-          <p>As we mentioned in the Transformation section, data in our S3 bucket is aggregated by timestamp, then converted into a time series data format and written to Timestream. Because time series data is a first-class citizen in Timestream, the database can quickly and efficiently read and write time series data. An added benefit is that the data returned by a Timestream query is already in the shape we need to eventually display it.</p>
-          <br/>
-          <h3>5.4 Visualization</h3>
-          <br/>
-          <figure>
-            <img src="assets/images/5-architecture/slide62.svg">
-            <figcaption>Fig. 5.15: Monsoon’s Visualization Component</figcaption>
-          </figure>
-          <br/>
-          <p>Visualization is Monsoon's final architectural component. The Visualization architecture queries the Storage layer, then displays the data it retrieves in a graphical user interface.</p>
-          <p>We call our dashboard Weather Channel. It's a locally-hosted React app that directly queries the Timestream database service. This dashboard app uses the Victory library for modular charting and data visualization, as Victory has native support for time series data. We’ll show Weather Channel in action later in this case study.</p>
-          <br/>
-          <!--Section 6-->
-          <h2>6 Installing and Using Monsoon</h2>
+          <br />
+          <!-- Section 4 -->
+          <h2>4 Feature Flags for Testing in Production</h2>
           <br />
           <p>
-            We've published Monsoon as an npm package, so you can just run <code>npm install –g monsoon-load-testing</code> to install Monsoon globally on your local machine. 
-            After you've installed the package, you'll want to verify that your hidden AWS config file is correct and does not contain a default profile.
+            Feature flagging provides the ability to selectively enable and disable features in real-time, as well as the ability to designate specific audiences. This makes it a suitable tool for developers who wish to test their features in production. 
+          </p>
+          <p>
+            There are various ways to use feature flags, including standard toggling, percentages, unique identifiers, and attribute/audience targeting.
+          </p>
+          <h3>4.1 Standard Toggling</h3>
+          <br />
+          <p>
+            Feature flags offer the ability to remotely toggle functionality entirely on or off. This means that the developer can use a flag to release a new feature, and if something goes wrong, it can simply be toggled off.
           </p>
           <figure>
-            <img src="assets/images/6-install_use_monsoon/credentials.png" class="case-study-image">
-            <figcaption>Fig 6.1: Verify your hidden AWS configuration files don’t contain default profiles</figcaption>
+            <img alt="" src="assets/images/image13.png" title="standard toggle">
+            <figcaption>Fig. 4.1: Standard Toggles</figcaption>
           </figure>
           <br />
           <p>
-            Next you can issue the <code>monsoon init</code> command. The <code>init</code> command also prompts you to enter your AWS credentials so that Monsoon can deploy infrastructure within your AWS account. 
-            This creates a new <code>monsoon_tests</code> subdirectory inside your current working directory. You'll need to <code>cd</code> into <code>monsoon_tests</code>, and be sure to execute all of the other Monsoon CLI subcommands, from within <code>monsoon_tests</code>.
+            However, this new feature would be released to the entire user base. Despite the speed of remotely toggling the feature off, wholesale release to the entire user base may still not be the best option because all users are potentially impacted by any problems. A standard toggle functionality isn’t quite enough - we need a way to narrow down the number of impacted users.
           </p>
-          <figure>
-            <img src="assets/images/6-install_use_monsoon/init.gif" class="case-study-image-full">
-            <figcaption>Fig 6.2: The <code>monsoon init</code> command</figcaption>
-          </figure>
+          <h3>4.2 Percentage Rollout</h3>
           <br />
-          <p>      
-            The next step is to issue the <code>monsoon deploy</code> command. This spins up the AWS ​
-            infrastructure required to run your load test, including a custom VPC, multiple Lambda ​
-            functions, an S3 bucket and a Timestream database.
+          <p>
+            One way to limit the impact is to adopt a percentage rollout strategy. This means users will be randomly sorted into the available experiences based on a predetermined rate. For example, the developer can have the new feature only serve 10% of their user base, limiting the potential impact of a negative experience.
           </p>
           <figure>
-            <img src="assets/images/6-install_use_monsoon/deploy.gif" class="case-study-image-full">
-            <figcaption>Fig 6.3: The <code>monsoon deploy</code> command</figcaption>
+            <img alt="" src="assets/images/image24.png" title="percentage rollout">
+            <figcaption>Fig 4.2 Percentage Rollout</figcaption>
           </figure>
           <br />
           <p>
-            From within your <code>monsoon_tests</code> directory, you save your test script in the ​
-            <code>test_script.js</code> file and configure your upcoming load test by modifying the <code>test_config.json</code> ​
-            file. If you anticipate running multiple different load tests with different test scripts and ​
-            configurations, you can set up additional subdirectories to organize all the different tests. Just ​
-            issue the <code>monsoon new-test</code> command.
+            While this helps, percentage rollout does not provide granular control over which users will receive certain experiences. This may be more suited for a use case like A/B testing where the developer wants to be indiscriminate about who sees the experimental feature. A more responsible approach to testing in production would be to specifically target bug-tolerant users.
+          </p>
+          <h3>4.3 Unique Identifier</h3>
+          <br />
+          <p>
+            One way to target bug-tolerant users is to designate a flag rule to target users based on a list of unique identifiers. This identifier can be anything that the developer has access to, like a user ID or IP address.
           </p>
           <br />
           <figure>
-            <img src="assets/images/6-install_use_monsoon/newtest.gif" class="case-study-image-full">
-            <figcaption>Fig 6.4: The <code>monsoon new-test</code> command</figcaption>
+            <img alt="" src="assets/images/image29.png" title="conditions screenshot">
+            <figcaption>Fig 4.3 Sample Conditions</figcaption>
           </figure>
           <br />
           <p>
-            Let's also look at an example test script and its configuration. 
-            Below we have a test script that loads the Boost homepage, then goes to the product page. 
-            The test is configured to last one hour. We start out with 20 concurrent users, then ramp up to 4000 concurrent users over a 50-minute time window.
-          </p>    
-          <figure>
-            <img src="assets/images/6-install_use_monsoon/script2.svg" class="case-study-image-full">
-            <figcaption>Fig 6.5: An example of test script</figcaption>
-          </figure>
-          <br />
-          <figure>
-            <img src="assets/images/6-install_use_monsoon/config2.svg" class="case-study-image-small">
-            <figcaption>Fig 6.6: An example of configuration file</figcaption>
-          </figure>
-          <br /> 
-          <p>
-            With the test script and configuration ready to go, you’ll next run the <code>monsoon start</code> command. 
-            This officially kicks off your load test and provides a bit of light reading while you wait.
+            This may allow developers to target specific, bug-tolerant users at an extremely granular level, but it can become cumbersome as the target user list increases. This can bloat the flag ruleset and make it difficult to manage when targets need to be removed.
           </p>
-          <figure>
-            <img src="assets/images/6-install_use_monsoon/start.gif" class="case-study-image-full">
-            <figcaption>Fig 6.7: The <code>monsoon start</code> command</figcaption>
-          </figure>
-          <br /> 
-          <p>
-            After about 7 minutes, your load test results will start streaming into the Weather Channel ​
-            dashboard. You can view these results locally by issuing the <code>monsoon weather-channel</code> ​
-            command, then opening up a browser and visiting localhost port 5000.
-          </p>
-          <br />
-          <figure>
-            <img src="assets/images/6-install_use_monsoon/weather.gif" class="case-study-image-full">
-            <figcaption>Fig 6.8: The <code>monsoon weather-channel</code> command</figcaption>
-          </figure>
-          <br />
-          <p>
-            Within the dashboard, you'll receive your data in near real time, so you can refresh your ​
-            browser to see the most current results. Clicking on the buttons at the top of the screen, you ​ 
-            can choose which end user action you'd like to see results for. And you can also toggle​           particular metrics on or off to see only the results that interest you.
-          </p>
-          <br />
-          <p> 
-            Weather Channel also allows you to zoom in and zoom out to get different perspectives on ​
-            your results. And if you hover over a line, you can see your metrics at that exact point in ​
-            time.
-          </p>
-          <br />
-          <figure>
-            <img src="assets/images/6-install_use_monsoon/dashboard_demo.gif" class="case-study-image-full">
-            <figcaption>Fig 6.9: A demo of monsoon dashboard <code>weather-channel</code></figcaption>
-          </figure>
-          <br />
-          <p>
-            Above we see what happened as we ramped up load on the Boost Health website to 4000 concurrent users. The results aren't good. 
-            Response times have increased all the way to 6000 milliseconds. 
-            Analyzing these results, the Boost engineers determine that their current infrastructure won't cut it for their upcoming product launch. 
-            Without running this load test, the Boost engineers wouldn't have known about this weakness in their production system.
-          </p>
-          <br />
-          <figure>
-            <img src="assets/images/6-install_use_monsoon/teardown.gif" class="case-study-image-full">
-            <figcaption>Fig 6.10: The <code>monsoon teardown</code> and <code>monsoon destroy</code> commands</figcaption>
-          </figure>
-          <br />
-          <p>
-            Returning to our demo, once your test is over and you've viewed your results, 
-            you can tear down your infrastructure by issuing the <code>monsoon teardown</code> command. 
-            If you'd also like to delete all directories and environment files related to Monsoon, 
-            run the <code>monsoon destroy</code> command after the <code>teardown</code> command.
-          </p>
-          <br />
-          <!--Section 7-->
-          <h2>7 Implementation Challenges</h2>
-          <br />
-          <p>
-            Building a distributed load testing tool is a complex undertaking, and we faced several implementation challenges along the way. 
-            Two categories of challenges stand out in particular.
-          </p>
-          </br>
-          <h3>7.1 Response Time</h3>
-          <p>
-            Early in the process of designing Monsoon, we spent a lot ​of time considering exactly what metrics to track for a load test. 
-            There were all sorts of things ​we could measure, 
-            but we wanted to choose the one that engineers would find most useful.
-          </p>
-          <br />
-          <p>
-            Examining existing load testing tools, we found that all of them focus on response time as ​
-            their core metric. But what is "response time" exactly? Maybe it’s the elapsed time between when a ​
-            client issues a request and when that client receives the first byte of the response. Or maybe ​
-            we keep the timer going until the DOM content is fully loaded. 
-          </p>
-          <br />
-          <figure>
-            <img src="assets/images/7-challenges/response_time.svg" class="case-study-image">
-            <figcaption>Fig 7.1: Which definition of “response time” is most useful to engineers?</figcaption>
-          </figure>
-          <br />
-          <p>
-            Because the core unit of a test script is one end user action, we ultimately chose to define response time ​as the difference between the starting and ending times for the given end user action. 
-            To ​make it easy for developers to calculate response times in their load tests, we wrote a library ​called Monsoon Weather Station, 
-            as we mentioned earlier in the Architecture section.​
-          </p>
-          <br />
-          <h3>7.2 Timing</h3>
-          <p>Our other implementation challenges related to timing. These were by far the larger and more complex issues. </p>
+          <h3>4.4 Attributes/Segmenting</h3>
           <br />
 
-          <h4>Containers</h4>
-          <p>
-            When a developer using Monsoon issues the <code>monsoon start</code> command to kick off a load test, the CLI code sends an event to a starting Lambda, which in turn spins up the appropriate number of containers. 
-            But it can take anywhere from 15 to 60 seconds for a container on Fargate to be ready to run. 
-            Since load generation happens inside the containers, if the containers aren't all starting together, 
-            then we're no longer truly testing the specified number of concurrent users.​
-          </p>
-          <br />
-          <figure>
-            <img src="assets/images/7-challenges/waiting_time.gif" class="case-study-image-large">
-            <figcaption>Fig 7.2: A waiting time ensures all virtual users hit the website at once</figcaption>
-          </figure>
-          <br />
-          <p>
-            To solve this problem, we introduced a waiting time of 3 minutes to make sure that all containers are in a ready state before Monsoon actually runs the test script. 
-          </p>
-          <br />
-
-          <h4>Data Generation and Processing</h4>
-          <p>
-            Once all the containers are up and running, how do we coordinate the timing of data ​
-            generation and processing?
-          </p>
-          <br />
-          <p>
-            We had to carefully orchestrate our data pipeline to solve this second timing issue. As ​
-            mentioned in the architecture section, inside each container, 
-            a runner script is responsible for generating headless Chrome instances with Puppeteer and running the test ​script to generate the data. 
-            That raw data needs to be normalized and then sent off to our S3 ​bucket. 
-            But in order to present near real time results to developers, we can't wait until all the ​raw data is generated before starting to process it. 
-            Therefore our normalization script polls for ​new raw data every 15 seconds.    
-          </p>
-          <br />
-          <figure>
-            <img src="assets/images/7-challenges/polling.gif" class="case-study-image-full">
-            <figcaption>Fig 7.3: Polling lets data keep moving through our pipeline</figcaption>
-          </figure>
-          <br />
-          <h4>Moving Data to Timestream</h4>
-          <p>
-            Now that the normalizing script has moved the processed data into the S3 bucket, we run into ​
-            a third timing issue. How will we get the data sitting in the S3 bucket into our Timestream ​
-            database?​
-          </p>
-          <br />
-          <p>
-            High level, we handled this by creating an EventBridge rule to invoke our Metronome Lambda once every ​minute. The Metronome Lambda checks a collection of pre-generated timestamps to ​see if any have expired. If any have, the Metronome Lambda invokes the Aggregating Lambda, which gathers the new batch of data and sends it to Timestream.​
-          </p>
-          <br />
-          <figure>
-            <img src="assets/images/7-challenges/timestream.gif" class="case-study-image-full">
-            <figcaption>Fig 7.4: The Metronome Lambda ensures we move data from S3 to Timestream in a timely fashion</figcaption>
-          </figure>
-          <br/>
-          <p>
-            Let’s examine this in greater detail.
-          </p>
-          <br/>
-          <p>
-            The Aggregating Lambda's only concern is aggregating the normalized test results and saving them to Timestream. The Aggregating Lambda needs to wait until all the test results for a given timestamp are stored in the S3 bucket. Since each Load Generation Fargate instance simulates 20 virtual users, for a test of 4000 users, we expect the Aggregating Lambda to process 200 normalized JSON files for each timestamp/end user action pair.
-          </p>
-          <br/>
-          <p>
-            However, how does the Aggregating Lambda know when these 200 files are ready to be processed? And more importantly, what if AWS has a server issue and 10 of the 200 Fargate instances never get spun up? Will the lambda be waiting forever for those 10 missing JSON files? The reality is that the Aggregating Lambda has no way of knowing when files are ready to be processed. It needs assistance from another lambda, the Metronome Lambda.
-          </p>
-          <br/>
-          <p>
-            The Metronome Lambda’s objective is to orchestrate and set the pace of the transformation process. The Metronome Lambda is controlled by an EventBridge rule that triggers the lambda every 1 minute. Amazon EventBridge is a serverless event bus used to build event-driven applications.
-          </p>
-          <br/>
-          <p>
-            Let's see this process in more detail:
-          </p>
-          <br/>
-          <ol>
-            <li><p>
-              Every minute, the Metronome Lambda retrieves a file called <code>timestamps.json</code> from the S3 bucket. This file contains a collection of pre-generated normalized timestamps.
-            </p></li>
-            <li><p>
-              Then the Metronome Lambda goes over this array of timestamps, filtering out all the timestamps that have “expired”. A timestamp is considered expired if more than 3 minutes have passed since the timestamp was created.
-            </p></li>
-            <li>
-              <p>
-                The Metronome Lambda fires an event for each action and expired timestamp, triggering as many Aggregating Lambda invocations as events generated. For example, if the Metronome Lambda finds 2 timestamps have expired for a test with 3 user actions, it fires 6 events that then trigger 6 concurrent Aggregating Lambda invocations. The Aggregating Lambda instances then aggregate the data and save it to Timestream.
-              </p>
-            </li>
-            <li>
-              <p>
-                Finally, the Metronome Lambda returns the modified <code>timestamps.json</code> file to the S3 bucket. This process will be repeated until there are no more timestamps left in the <code>timestamp.json</code> file.
-              </p>
-            </li>
-          </ol>
-          <br/>
-          <figure>
-            <img src="assets/images/7-challenges/metronome_in_action.gif" class="case-study-image-full">
-            <figcaption>Fig 7.5: The Metronome Lambda in action</figcaption>
-          </figure>
-          <p>
-            After solving this third timing issue, we had a working data pipeline capable of moving raw test ​
-            result data from containers to an S3 bucket and then to the database, performing transformations along the way.     
-          </p>
-          <br />
-          <!-- Section 8 -->
-          <h2>8 Future work</h2>
-          <p>
-            First, we'd like to <strong>rewrite certain parts of the project in Go</strong>. In its current state, Monsoon is written entirely in JavaScript and TypeScript. 
-            This certainly works, but there are parts of the project, particularly the normalizing script and the Aggregating Lambda, that do a lot of heavy lifting in terms of data processing. 
-            These pieces could benefit from the faster runtime performance and better CPU utilization of a compiled language like Go.
-          </p>
-          <br />
-          <p>
-            Second, we'd like to <strong>provide additional libraries</strong> so that we can support test scripts written for multiple load testing tools. For example, 
-            we could provide a version of the Weather Station library that's compatible with Playwright test scripts.
-          </p>
-          <br />
-          <p>
-            Third, we'd like to implement <strong>a new feature that checks test scripts for correctness before ​
-            actually running them</strong>. As it stands now, a developer can start a load test even if the test script ​
-            itself is not written according to our instructions. This can waste valuable developer time while ​
-            also incurring AWS bills for the infrastructure used. This pre-check would be incorporated behind the scenes as part of the <code>monsoon start</code> command.
-          </p>
-          <br />
-          <p>
-            And a final feature we'd like to implement is allowing developers to <strong>export their load test results to a CSV file</strong>.
-          </p>
-          <br />
-          <!-- Section 9 -->
-          <h2>9 References</h2>
-
-          <p><strong>Books</strong></p>
+          
+          <!-- References -->
+          <h2>References</h2>
+          <div>
+            <p><a href="#ftnt_ref1" id="ftnt1">[1]</a>Web Scalability for Startup Engineers p333</p>
+         </div>
+         <div>
+            <p><a href="#ftnt_ref2" id="ftnt2">[2]</a>https://martinfowler.com/articles/microservice-testing/</p>
+         </div>
+         <div>
+            <p><a href="#ftnt_ref3" id="ftnt3">[3]</a>https://blog.samstokes.co.uk/blog/2016/07/11/move-fast-with-confidence/</p>
+         </div>
+         <div>
+            <p><a href="#ftnt_ref4" id="ftnt4">[4]</a>https://increment.com/testing/what-broke-the-bank/</p>
+         </div>
+         <div>
+            <p><a href="#ftnt_ref5" id="ftnt5">[5]</a>https://medium.com/vmware-end-user-computing/using-feature-flags-to-enable-nearly-continuous-deployment-for-mobile-apps-b6d0940657ff</p>
+         </div>
+         <div>
+            <p><a href="#ftnt_ref6" id="ftnt6">[6]</a>https://launchdarkly.com/case-studies/atlassian/</p>
+         </div>
+         <div>
+            <p><a href="#ftnt_ref7" id="ftnt7">[7]</a>https://docs.featurehub.io/featurehub/latest/architecture.html#_nats</p>
+         </div>
+         <div>
+            <p><a href="#ftnt_ref8" id="ftnt8">[8]</a>https://launchdarkly.com/blog/flag-delivery-at-edge/</p>
+         </div>
+          <!-- <p><strong>Books</strong></p>
           <ul>
             <li><a href="https://www.amazon.com/Hitchhiking-Guide-Testing-Projects-Step/dp/0988540207" class="references">The Hitchhiking Guide To Load Testing Projects by Leandro Melendez</a></li>
             <li><a href="https://www.oreilly.com/library/view/data-pipelines-pocket/9781492087823/"
@@ -1048,15 +539,15 @@
             <li><a href="https://www.flood.io" class="references">Flood</a></li>
             <li><a href="https://www.loadview-testing.com" class="references">loadview</a></li>
             <li><a href="https://loadninja.com" class="references">LoadNinja</a></li>
-          </ul>
+          </ul> -->
           <br>
           <h2>Presentation</h2>
           <div class="presentation-wrapper case-study-image">
 
-            <iframe class="presentation-video" frameborder="0" src="https://www.youtube.com/embed/3YANkiPr7qI"
+            <iframe class="presentation-video" frameborder="0" src=""
               allowfullscreen></iframe>
           </div class="presentation-wrapper">
-          <br> -->
+          <br>
           <h2>Team</h2>
           <br />
           <div class="section team-section">
