@@ -1423,7 +1423,7 @@ a:hover {
   -webkit-transition: color 0.3s ease;
   transition: color 0.3s ease;
   /* color: #161d6f; */
-  color: #15416C;
+  color: #ffffff;
   font-size: 15px;
   font-weight: 500;
   text-decoration: none;
@@ -1487,6 +1487,7 @@ a:hover {
 }
 
 .navigation-wrap {
+  background-color: #15416C;
   display: -webkit-box;
   display: -webkit-flex;
   display: -ms-flexbox;
