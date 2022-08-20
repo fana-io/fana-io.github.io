@@ -295,7 +295,9 @@
           <p>
             While automated testing can prevent code regression, it does not always represent how real users may interact with a system or fully portray the environment in which the system will run. Staging environments attempt to replicate production with as high fidelity as possible to facilitate more robust and precise insight into the quality and behavior of the system at large. 
           </p>
-          <img alt="" src="assets/images/image5.png" style="width: 288.75px; height: 245.718px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);"title="martin kelppmann quote">
+          <figure>
+            <img alt="" src="assets/images/image5.png" style="width: 288.75px; height: 245.718px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);"title="martin kelppmann quote">
+          </figure>
           <br />
           <figure>
             <img alt="" src="assets/images/image44.png" title="staging environment">
@@ -311,7 +313,9 @@
               <li >Unpredictable user behavior</li>
            </ul>
           </p>
-          <img alt="" src="assets/images/image23.png" style="width: 332.49px; height: 251.50px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);" title="charity majors quote">
+          <figure>
+            <img alt="" src="assets/images/image23.png" style="width: 332.49px; height: 251.50px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);" title="charity majors quote">
+          </figure>
           <br />
           <p>
             Even with robust automated testing suites and sophisticated staging environments, the production environment still represents unpredictable and irreplicable conditions
@@ -492,7 +496,7 @@
           <p>To revisit the case of VMware as a practical example, the engineering team utilized feature flags wherever the old feature was referenced in the existing code base, allowing different versions to be served to different users.</p>
           <p>To implement this, VMware created three separate user audiences: Developers, Beta users, and General Audience. Different versions of the feature were served by evaluating the respective feature flags based on which audience the user was in. This allowed the engineering team to test new iterations of the feature in production as they were being developed.</p>
           <figure>
-            <img alt="" src="assets/video/vmware_steps.gif"title="">
+            <img alt="" src="assets/video/vmware_steps.gif" title="">
             <figcaption>Fig 4.6: VMWare progressively rolled out a new feature to targeted user groups before releasing to all users</figcaption>
           </figure>
           <p>Once a feature completed the requisite internal testing, it was made available to Beta target users. This allowed VMware to collect user feedback and update the feature accordingly. Because of the size and scope of the feature, VMware iterated through several testing cycles within the Beta users before moving forward to the General Audience stage in production. Still, even once the feature was generally available, it could be easily disabled via toggling off the associated feature flag. This would effectively revert to the pre-rewrite version of the feature while issues with the new version could be investigated and resolved.</p>
@@ -764,11 +768,11 @@
             <img src="assets/images/image22.gif"/>
             <figcaption>Fig 6.7: Fána's Final Architecture Data Flow</figcaption>
           </figure>
-          <p>Having established the above architecture and the responsibility of each of the components, the following section will discuss how to install Fána’s SDKs and deploy the platform for use.</p>
+          <p>Having established the above architecture and the responsibility of each of the components, the following section will discuss how to deploy the platform for use.</p>
           <h2>7 Deploying Fána</h2>
           <br />
           <p>There are two options for deploying Fána: self-hosted using Docker or cloud-hosted on AWS. Developers interested in using Fana in a self-hosted environment (non-AWS) or are interested in testing out Fana in their local development environment can deploy the entire Fana stack with one command using Docker. Alternatively, developers that are already familiar with the AWS environment can quickly deploy the Fánastack using the provided AWS Cloud Development Kit (CDK) template.</p>
-          <h2>7.1 Docker</h2>
+          <h3>7.1 Docker</h3>
           <p>Developers who want the flexibility of self-hosting can choose to utilize Fána’s containerized components using Docker. This option allows for Fána to be managed and deployed across any environment of the developer’s choosing.</p>
 
           <figure>
@@ -784,7 +788,7 @@
             <figcaption>Fig 7.1b: Docker Compose spins up all services necessary to run Fana in a Docker Network.</figcaption>
           </figure>
           <p>The <code>docker-compose.yml</code> file references Fána’s latest images for each component as well as utilizing the latest and maintained Redis and PostgreSQL images, which are defined to start up in their dependency order. Developers can configure the necessary administrative variables as well as expose necessary host and port endpoints in the environment file to deploy Fána.</p>
-          <h2>7.2 AWS</h2>
+          <h3>7.2 AWS</h3>
           <p>Developers who want to leverage AWS’s managed Elastic Container Services (ECS) hosted on AWS Fargate, a serverless, pay-as-you-go compute engine, can choose to utilize Fána’s CDK App to spin up a Fána platform on the cloud.</p>
           <figure>
             <img src="assets/images/image27.gif" alt="cdk deploy all command provisions AWS cloud resources in one command" class="round-shadow">
