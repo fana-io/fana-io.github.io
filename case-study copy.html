@@ -563,7 +563,7 @@
 <p>The next section introduces a Fána, an alternative feature flagging solution.</p>
   
           <!-- Section 6 -->
-          <h2>6 Fana</h2>
+          <h2>6 Fána</h2>
           <br />
           <p>
             Fána occupies a niche in between, offering the ready-made functionality of a third-party solution for development teams specifically looking to utilize feature flagging to target audiences. 
@@ -577,12 +577,12 @@
           <p>Fána allows developers to selectively serve experiences to particular audiences while allowing for remote toggling in real-time. This is particularly useful when testing in production, as developers may wish to only serve a new feature to bug-tolerant groups. If something goes wrong, developers can flip the switch to turn that feature off instantly. </p>
           <p>To implement audience targeting via feature flags, Fána makes use of a set of entities to describe, assess, and target users as discussed in the following sections.</p>
           <h3 id="fanas-entities">6.1 Fána's Entities</h3>
-          <p>Fána has three closely related entities at its core: Attributes, Audiences, and Flags. Together, they enable Fana users to target intentional segments of users within their application.</p>
+          <p>Fána has three closely related entities at its core: Attributes, Audiences, and Flags. Together, they enable Fána users to target intentional segments of users within their application.</p>
           <h4>6.1.1 Attributes</h4>
           <p>The first entity that a Fána user would need to consider is attributes. Attributes are qualities that serve to describe a user. The values assigned to these attributes–which can be of data types strings, numbers, or booleans–are used to evaluate a user’s eligibility against the conditions within an audience. </p>
-          <p>After creating an attribute, Fana users can include it when creating and configuring their audiences.</p>
+          <p>After creating an attribute, Fána users can include it when creating and configuring their audiences.</p>
           <h5>Creating an Attribute in the Fána Dashboard</h5>
-          <p>Below is an example of the Fana dashboard creating three new attributes, one of each data type. </p>
+          <p>Below is an example of the Fána dashboard creating three new attributes, one of each data type. </p>
           <iframe width="560" height="315" src="https://www.youtube.com/embed/2dfDe3ZgLkg" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
           <h5>User Context</h5>
           <p>A user context is an object composed of attributes-value pairs and is defined within the Fána user’s application code to provide relevant information about a user. Note that the user context is developer-defined, so it can consist of any data that the developer has access to. For example, a user context can have attributes describing the user’s location, age, and whether they are a student. </p>
@@ -604,7 +604,7 @@
             <li>If the combination is “ANY”, it means that the user context only needs to meet one of the conditions to qualify for this audience. </li>
             <li>If the combination is “ALL”, it means that the user context must meet all conditions to qualify for this audience.</li>
           </ul>
-          <h5>Creating an Audience in the Fana Dashboard</h5>
+          <h5>Creating an Audience in the Fána Dashboard</h5>
           <p>Below is an example of the Fána Dashboard creating a new audience called West Coast Students that has two conditions with an “ALL” combination. To qualify for this audience, the user context must meet all conditions: `student` attribute set to `true`, and `state` attribute set to one of  `CA`, `WA`, or `OR`.</p>
           <iframe width="560" height="315" src="https://www.youtube.com/embed/8jahB63zlKk" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
           <p>After creating an audience, the Fána user can target it when creating and configuring their flags. </p>
@@ -616,8 +616,8 @@
             <li>a <b>toggle</b>, which indicates whether this flag is enabled or disabled; and</li>
             <li>a list of <b>targeted audiences</b> for which the user context must qualify for any to evaluate TRUE for this flag.</li>
           </ul>
-          <h5>Creating a Flag in the Fana Dashboard</h5>
-          <p>Below is an example of the Fana Dashboard creating a new flag to target the previously created West Coast Students audience.</p>
+          <h5>Creating a Flag in the Fána Dashboard</h5>
+          <p>Below is an example of the Fána Dashboard creating a new flag to target the previously created West Coast Students audience.</p>
           <iframe width="560" height="315" src="https://www.youtube.com/embed/N2FZ59VGXjc" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
           <p>Once a flag is created, the developer can use the flag key in their code when calling the evaluateFlag method, provided by the Fána SDK (more about SDKs in <a href="#sdk-section">section 6.6</a>). </p>
           <p>The following sections will discuss the overall architecture, different components of Fána design in detail, and how these components communicate within an event-driven architecture to support real-time updates and audience targeting. </p>
@@ -705,7 +705,7 @@
           <h3>6.5 Redis Store and Publisher/Subscriber</h3>
           <p>The purpose of the Redis Cluster in Fána’s architecture is twofold: Fána uses Redis as a caching layer for flag data and as a message broker in a publisher/subscriber (pub/sub) model to push real-time updates to SDKs. </p>
           <p>The Redis key-value data store holds the flag data for the Flag Bearer. The Manager backend is responsible for refreshing the data store with the latest flag data whenever an update is made to a flag or audience. Whenever a change is made, the backend writes to the database and the Redis data store. The data store is accessed by the Flag Bearer when any SDK initialization requests come in.</p>
-          <p>A common pattern to facilitate uni-directional communication in event-driven architectures like Fana’s is to utilize a message broker. Message brokers are useful intermediaries, particularly in scenarios where one component is sending messages to potentially many components in a distributed system<sup class="c15"><a href="#ftnt7">[7]</a></sup>. Fana’s Redis cluster also serves as a message broker to facilitate the event-driven messages between the Manager backend API service and the Flag Bearer. The primary benefit of the pub/sub model is that it decouples communications between the Manager and Flag Bearer, where the Manager publishes messages to various channels to which the Flag Bearer subscribes. A key feature of a pub/sub model is that the publisher does not need to know about any of the subscribers or do anything different for a consumer to start receiving messages. This worked well for Fána, as the Flag Bearer layer can scale without the Manager needing to know about any new Flag Bearer nodes that come online. Each Bearer node automatically subscribes to the appropriate channels and can start receiving event-driven messages immediately.</p>
+          <p>A common pattern to facilitate uni-directional communication in event-driven architectures like Fána’s is to utilize a message broker. Message brokers are useful intermediaries, particularly in scenarios where one component is sending messages to potentially many components in a distributed system<sup class="c15"><a href="#ftnt7">[7]</a></sup>. Fána’s Redis cluster also serves as a message broker to facilitate the event-driven messages between the Manager backend API service and the Flag Bearer. The primary benefit of the pub/sub model is that it decouples communications between the Manager and Flag Bearer, where the Manager publishes messages to various channels to which the Flag Bearer subscribes. A key feature of a pub/sub model is that the publisher does not need to know about any of the subscribers or do anything different for a consumer to start receiving messages. This worked well for Fána, as the Flag Bearer layer can scale without the Manager needing to know about any new Flag Bearer nodes that come online. Each Bearer node automatically subscribes to the appropriate channels and can start receiving event-driven messages immediately.</p>
           <p>Fána’s pub/sub implements two different message channels for flag updates: general flag updates and flag toggle updates. When any changes are made to the flag resources, the Manager backend will both write to the data store and publish a message with the updated data to the Pub/Sub, which is forwarded by the Flag Bearer to existing or open SSE connections with SDKs.</p>
           <figure>
             <img alt="" src="assets/images/image43.gif"/>
@@ -757,13 +757,13 @@
           <p>By having two separate SDK keys, the server-side SDK key should never be revealed publicly, thus keeping the sensitive user data safe. </p>
           <p>If the server-side SDK key does end up getting compromised, the Fána dashboard offers the option to regenerate either SDK key, invaliding the current one. The regeneration process is not to be taken lightly, as it will block any future initialization attempts until the old SDK key is replaced within the application code. </p>
           <h3>6.7 Final Architecture</h3>
-          <p>The final architecture of Fana with the four major components shown in detail is below.  </p>
+          <p>The final architecture of Fána with the four major components shown in detail is below.  </p>
           <figure>
             <img src="assets/images/image22.gif"/>
             <figcaption>Fig 6.7: Fána's Final Architecture Data Flow</figcaption>
           </figure>
           <p>Having established the above architecture and the responsibility of each of the components, the following section will discuss how to install Fána’s SDKs and deploy the platform for use.</p>
-          <h2>7 Deploying Fana</h2>
+          <h2>7 Deploying Fána</h2>
           <br />
           <h2>Docker</h2>
           <h2>AWS</h2>
