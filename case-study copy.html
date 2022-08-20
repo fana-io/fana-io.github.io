@@ -472,25 +472,96 @@
           <h3>4.4 Attributes</h3>
           <br />
           <p>
-
+            Feature flags can also be evaluated based on developer-defined attributes. These attributes can be general user information, session context, environment values, etc, used to conditionally execute application logic. Attributes facilitate a more flexible and granular approach by providing a means for deliberate criteria-based targeting according to whatever evaluation context values a developer chooses.
           </p>
+          <figure>
+            <img alt="" src="/assets/images/image45.png" title="">
+            <figcaption>Fig 4.4: Target features to specific users by specifying attributes</figcaption>
+          </figure>
+          <p>As a simple example, a developer may be trying to target west coast students for an experimental new feature. Their flag would target anyone that has their <code>student</code> attribute as <code>true</code> and their <code>state</code> attribute as either <code>California</code>, <code>Washington</code>, or <code>Oregon</code>.</p>
+          <p>To take it a step further, developers can bundle multiple attribute-based rules into groups, also known as audiences. Audiences are a set of rules based on those developer-defined attributes, and they offer convenient reuse of targeting criteria composed of more complexly structured or numerous attribute qualifications. This can be particularly useful when testing in production, as a single audience can be used for any flags without needing to redeclare any of the conditional attribute logic.</p>
+          <figure>
+            <img alt="" src="assets/images/image15.png">
+            <figcaption>Fig 4.5: Target features to specific users by specifying attributes</figcaption>
+          </figure>
+          
+          
+          <p>If the example feature flag is modified to target West Coast Students, a developer can bundle the <code>student</code> and <code>state</code> attribute together to create this audience. Now, instead of having to set <code>student</code> to <code>true</code>, and <code>state</code> is <code>California</code>, <code>state</code> is <code>Washington</code>, or <code>state</code> is <code>Oregon</code> on every flag, developers can simply declare those requirements on the <code>West Coast Students</code> audience, and reuse the audience in the relevant flags. </p>
+          <p>To revisit the case of VMware as a practical example, the engineering team utilized feature flags wherever the old feature was referenced in the existing code base, allowing different versions to be served to different users.</p>
+          <p>To implement this, VMware created three separate user audiences: Developers, Beta users, and General Audience. Different versions of the feature were served by evaluating the respective feature flags based on which audience the user was in. This allowed the engineering team to test new iterations of the feature in production as they were being developed.</p>
+          <figure>
+            <img alt="" src="/assets/images/image16.png"title="">
+            <figcaption>Fig 4.6: VMWare progressively rolled out a new feature to targeted user groups before releasing to all users</figcaption>
+          </figure>
+          <p>Once a feature completed the requisite internal testing, it was made available to Beta target users. This allowed VMware to collect user feedback and update the feature accordingly. Because of the size and scope of the feature, VMware iterated through several testing cycles within the Beta users before moving forward to the General Audience stage in production. Still, even once the feature was generally available, it could be easily disabled via toggling off the associated feature flag. This would effectively revert to the pre-rewrite version of the feature while issues with the new version could be investigated and resolved.</p>
           <br />
           <!-- Section 5 -->
           <h2>5 Implementation Options</h2>
           <br />
           <p>
-
+            There are several options for teams looking to release features to targeted audiences using a feature flagging solution:  DIY in-house implementations, commercial options, and open source options. Each of these options has distinct strengths and limitations. 
           </p>
           <br />
-
-
           <h3>5.1 DIY</h3>
           <br />
           <p>
-
+            One option to implement a feature flag platform is to build an in-house solution. To build one that accommodates audience-targeted releases, a DIY solution would need the following core features:
           </p>
+          <ul>
+            <li>flags need to be evaluated dynamically and in real-time to execute rapid rollback of problematic features</li>
+            <li>a consistent data source to hold flag definitions and audience rules; i.e., which users see which features</li>
+          </ul>
+          <p>
+            Architecturally, the above requirements necessitate several components to implement a minimum viable feature flagging platform:
+          </p>
+          <ul>
+            <li>a persistent backend data store for flag data, audience rules, and the targeted attributes that compose those rules.</li>
+            <li>a developer interface–likely a  CLI–by which to manage that data set: toggle flags, adjust the composition of audiences, etc.
+            </li>
+            <li>a package embedded in the application to execute the appropriate flagged features within the application.</li>
+          </ul>
+          <figure>
+            <img alt="" src="/assets/images/image19.png"title="" style="max-width: 500px;">
+            <figcaption>Fig 5.1: Minimum necessary components to build an in-house feature flag solution</figcaption>
+          </figure>
+          <p>Going the DIY route is a viable option, however, building a bootstrapped feature flagging system poses many challenges. For example, Atlassian built its own system primarily to control feature releases. As more teams wanted to use the in-house solution, developing and maintaining the solution became unwieldy. In addition, the system was not designed for users outside the development team. Without a user interface, teams outside of engineering, such as Product Management, had to rely on the engineering teams to manage flags and run beta tests<sup><a href="#ftnt6">[6]</a></sup>.</p>
+          <p>While building an in-house feature flagging platform provides deployment flexibility and data privacy, there’s a significant cost in the engineering team’s available resources to build the tool out initially. It’s also likely that continuous work may be required to maintain and evolve the platform moving forward. </p>
+          <p>While building an in-house feature flagging platform provides deployment flexibility and data privacy, there’s a significant cost in the engineering team’s available resources to build the tool out initially. It’s also likely that continuous work may be required to maintain and evolve the platform moving forward. </p>
+          <h3>5.2 Open Source</h3>
           <br />
-          
+          <p>
+            Leveraging open-source solutions is a cost-effective way to build a customizable feature flagging platform while maintaining data ownership through self-hosting. However, there are a few notable tradeoffs of using open-source solutions:
+          </p>
+          <ul>
+            <li>Fewer features out of the box than paid solutions (e.g. experimentation, A/B testing, workflow integrations)</li>
+            <li>Dedicated resources are needed to build and maintain the feature flag platform</li>
+          </ul>
+          <p>
+            For example, FeatureHub offers the ability to implement targeting rules based on attributes but can't group those rules into audiences. The lack of reusability results in a tedious process of manually setting up rules on each flag. Unleash does have audience targeting (they call them segments), but only as part of their paid tier plan. Therefore, building off these open source solutions still requires additional resources to implement flexible and reusable audience targeting functionality.
+          </p>
+          <h3>5.3 Paid Solutions</h3>
+          <br />
+          <p>
+            If the resource overhead or lead time of implementing a DIY solution is too prohibitive, there are several robust feature flag solutions on the market offering paid options. These save time and resources by providing rich and convenient functionality out of the box. There are a few options here, but two of the most popular ones on the market are LaunchDarkly and Optimizely.</p><p>Premium solutions come with a lot of built-in support for experimentation, workflow integrations, and segment targeting. However, with these benefits come some considerations:
+          </p>
+          <ul>
+            <li>Paid: These enterprise solutions generally come at a monthly cost per user, which may be prohibitive to smaller companies</li>
+            <li>Not self-hosted: Flag data and targeting rules may contain sensitive information, which can be problematic in cases where there are legal restrictions on sharing data with a third-party service</li>
+          </ul>
+          <h3>5.4 Weighing the Options</h3>
+          <br />
+          <p>
+            A developer team looking for a high degree of flexibility and customization can opt for open source solutions to bootstrap a DIY feature flag implementation or build an in-house solution completely from the ground up. While flexible and customizable, the DIY route may carry a higher cost in the way of engineering resources and time.</p><p>For broad and proven functionality out of the box, a developer team can consider enterprise solutions like LaunchDarkly. However, some tradeoffs with using third-party services include:</p>
+<ul>
+  <li>Cost: certain features like targeting specific audiences are accessible through a monthly fee.</li>
+  <li>Data privacy: Potentially exposing user data or company data to a third-party database.</li>
+</ul><figure>
+  <img alt="" src="assets/images/image28.png" title="">
+  <figcaption>Fig 5.4: Comparison between DIY and paid feature flagging solutions</figcaption>
+</figure>
+<p>For a smaller, budget-conscious developer team that needs audience targeting functionality for testing in production out of the box and prioritizes data privacy, an enterprise solution may not meet their needs.</p>
+<p>The next section introduces a Fána, an alternative feature flagging solution.</p>
+  
           <!-- Section 6 -->
           <h2>6 Fana</h2>
           <br />

@@ -2224,3 +2224,10 @@ iframe {
   border-radius: 10px;
   box-shadow: 12px 12px 7px 1px rgba(97, 96, 96, 0.621);
 }
+
+code {
+  background-color: #e3e8f4;
+  color: #161d6f;
+  border-radius: 7px;
+  padding: 3px;
+}
