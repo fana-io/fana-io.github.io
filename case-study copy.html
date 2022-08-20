@@ -516,7 +516,7 @@
           </p>
           <ul>
             <li>a persistent backend data store for flag data, audience rules, and the targeted attributes that compose those rules.</li>
-            <li>a developer interface–likely a  CLI–by which to manage that data set: toggle flags, adjust the composition of audiences, etc.
+            <li>a developer interface, like on a command line, by which to manage that data set: toggle flags, adjust the composition of audiences, etc.
             </li>
             <li>a package embedded in the application to execute the appropriate flagged features within the application.</li>
           </ul>
@@ -566,24 +566,50 @@
           <h2>6 Fana</h2>
           <br />
           <p>
-
+            Fána occupies a niche in between, offering the ready-made functionality of a third-party solution for development teams specifically looking to utilize feature flagging to target audiences. 
           </p>
+          <p>Fána offers a simple, straightforward frontend interface to manage flags and their audiences, making for an intuitive user experience with a minimal learning curve. Additionally, while Fána can be self-hosted to maximize data hosting flexibility, the option of automated deployment to Amazon Web Services (AWS) offers the most convenient solution to get up and running most quickly.</p>
+          <figure>
+            <img alt="" src="assets/images/image35.png">
+            <figcaption>Fig 6.0: Comparing Fána as an alternative solution</figcaption>
+          </figure>
+          <br />
+          <p>Fána allows developers to selectively serve experiences to particular audiences while allowing for remote toggling in real-time. This is particularly useful when testing in production, as developers may wish to only serve a new feature to bug-tolerant groups. If something goes wrong, developers can flip the switch to turn that feature off instantly. </p>
+          <p>To implement audience targeting via feature flags, Fána makes use of a set of entities to describe, assess, and target users as discussed in the following sections.</p>
+          <h3>6.1 Fana's Entities</h3>
+          <h3>6.2 Architecture Overview</h3>
+          <h3>6.3 Manager Platform</h3>
+          <h3>6.4 Flag Bearer</h3>
+          <h3>6.5 Redis Store and Publisher/Subscriber</h3>
+          <h3>6.6 Software Development Kits</h3>
+          <h3>6.7 Final Architecture/h3>
+            
+          <h2>7 Deploying Fana</h2>
+          <br />
+          <h2>Docker</h2>
+          <h2>AWS</h2>
           <br />
 
         <!-- Section 7 -->
-        <h2>7 Engineering Decisions & Tradeoffs</h2>
+        <h2>8 Engineering Decisions & Tradeoffs</h2>
         <br />
         <p>
     
         </p>
+        <h3>SQL vs NoSQL</h3>
+        <h3>Decoupling Manager Responsibilities</h3>
+        <h3>Communicating Between Components</h3>
         <br />
 
         <!-- Section 8 -->
-        <h2>8 Summary & Future Work</h2>
+        <h2>9 Summary & Future Work</h2>
         <br />
         <p>
     
         </p>
+        <h2>Edge Computing</h2>
+        <h2>Supporting Multiple Environments</h2>
+        <h2>Collecting Metrics</h2>
         <br />
   
           <!-- References -->
