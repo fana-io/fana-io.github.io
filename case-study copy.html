@@ -392,7 +392,7 @@
           </p>
           <figure>
             <img alt="" src="assets/images/image6.png" title="feature flag code">
-            <figcaption>Fig 3.2 Feature Flag Code Snippet</figcaption>
+            <figcaption>Fig 3.2: Feature Flag Code Snippet</figcaption>
           </figure>
           <p>
             Because feature flags rely on conditional flow in the source code itself, feature flags are usually configurable remotely, meaning that the codebase can be untouched while the routing or evaluation logic changes.
@@ -411,7 +411,7 @@
           <p>
             To revisit the key criteria for testing in production responsibly, the solution for a team looking to deploy a new feature with confidence needs to both facilitate strategic user group targeting and allow quick rollback of a problematic release with minimal downtime.
           </p>
-          Further, to execute this approach as a smaller team looking to maintain high-velocity code deployment cycles, there are additional flexibility requirements:
+          <p>Further, to execute this approach as a smaller team looking to maintain high-velocity code deployment cycles, there are additional flexibility requirements:</p>
           <ul>
             <li>Resolving an issue with one feature shouldn’t disrupt the deployment cycle of other changes. If possible, handling problematic features should have minimal collateral consequences for the deployment at large.</li>
             <li>Deployments and releases should be decoupled. By decoupling feature changes deployed to production from feature changes exposed to users, developer teams can reconcile long-term development with rapid iteration, as with VMware’s feature rewrite.</li>
@@ -449,7 +449,7 @@
           </p>
           <figure>
             <img alt="" src="assets/images/image24.png" title="percentage rollout">
-            <figcaption>Fig 4.2 Percentage Rollout</figcaption>
+            <figcaption>Fig 4.2: Percentage Rollout</figcaption>
           </figure>
           <br />
           <p>
@@ -463,7 +463,7 @@
           <br />
           <figure>
             <img alt="" src="assets/images/image29.png" title="conditions screenshot">
-            <figcaption>Fig 4.3 Sample Conditions</figcaption>
+            <figcaption>Fig 4.3: Sample Conditions</figcaption>
           </figure>
           <br />
           <p>
@@ -475,7 +475,7 @@
             Feature flags can also be evaluated based on developer-defined attributes. These attributes can be general user information, session context, environment values, etc, used to conditionally execute application logic. Attributes facilitate a more flexible and granular approach by providing a means for deliberate criteria-based targeting according to whatever evaluation context values a developer chooses.
           </p>
           <figure>
-            <img alt="" src="/assets/images/image45.png" title="">
+            <img alt="" src="assets/images/image45.png" title="">
             <figcaption>Fig 4.4: Target features to specific users by specifying attributes</figcaption>
           </figure>
           <p>As a simple example, a developer may be trying to target west coast students for an experimental new feature. Their flag would target anyone that has their <code>student</code> attribute as <code>true</code> and their <code>state</code> attribute as either <code>California</code>, <code>Washington</code>, or <code>Oregon</code>.</p>
@@ -490,7 +490,7 @@
           <p>To revisit the case of VMware as a practical example, the engineering team utilized feature flags wherever the old feature was referenced in the existing code base, allowing different versions to be served to different users.</p>
           <p>To implement this, VMware created three separate user audiences: Developers, Beta users, and General Audience. Different versions of the feature were served by evaluating the respective feature flags based on which audience the user was in. This allowed the engineering team to test new iterations of the feature in production as they were being developed.</p>
           <figure>
-            <img alt="" src="/assets/images/image16.png"title="">
+            <img alt="" src="assets/images/image16.png"title="">
             <figcaption>Fig 4.6: VMWare progressively rolled out a new feature to targeted user groups before releasing to all users</figcaption>
           </figure>
           <p>Once a feature completed the requisite internal testing, it was made available to Beta target users. This allowed VMware to collect user feedback and update the feature accordingly. Because of the size and scope of the feature, VMware iterated through several testing cycles within the Beta users before moving forward to the General Audience stage in production. Still, even once the feature was generally available, it could be easily disabled via toggling off the associated feature flag. This would effectively revert to the pre-rewrite version of the feature while issues with the new version could be investigated and resolved.</p>
@@ -521,10 +521,10 @@
             <li>a package embedded in the application to execute the appropriate flagged features within the application.</li>
           </ul>
           <figure>
-            <img alt="" src="/assets/images/image19.png"title="" style="max-width: 500px;">
+            <img alt="" src="assets/images/image19.png" title="" style="max-width: 500px;">
             <figcaption>Fig 5.1: Minimum necessary components to build an in-house feature flag solution</figcaption>
           </figure>
-          <p>Going the DIY route is a viable option, however, building a bootstrapped feature flagging system poses many challenges. For example, Atlassian built its own system primarily to control feature releases. As more teams wanted to use the in-house solution, developing and maintaining the solution became unwieldy. In addition, the system was not designed for users outside the development team. Without a user interface, teams outside of engineering, such as Product Management, had to rely on the engineering teams to manage flags and run beta tests<sup><a href="#ftnt6">[6]</a></sup>.</p>
+          <p>Going the DIY route is a viable option, however, building a bootstrapped feature flagging system poses many challenges. For example, Atlassian built its own system primarily to control feature releases. As more teams wanted to use the in-house solution, developing and maintaining the solution became unwieldy. In addition, the system was not designed for users outside the development team. Without a user interface, teams outside of engineering, such as Product Management, had to rely on the engineering teams to manage flags and run beta tests<sup class="c15"><a href="#ftnt6">[6]</a></sup>.</p>
           <p>While building an in-house feature flagging platform provides deployment flexibility and data privacy, there’s a significant cost in the engineering team’s available resources to build the tool out initially. It’s also likely that continuous work may be required to maintain and evolve the platform moving forward. </p>
           <p>While building an in-house feature flagging platform provides deployment flexibility and data privacy, there’s a significant cost in the engineering team’s available resources to build the tool out initially. It’s also likely that continuous work may be required to maintain and evolve the platform moving forward. </p>
           <h3>5.2 Open Source</h3>
@@ -576,14 +576,193 @@
           <br />
           <p>Fána allows developers to selectively serve experiences to particular audiences while allowing for remote toggling in real-time. This is particularly useful when testing in production, as developers may wish to only serve a new feature to bug-tolerant groups. If something goes wrong, developers can flip the switch to turn that feature off instantly. </p>
           <p>To implement audience targeting via feature flags, Fána makes use of a set of entities to describe, assess, and target users as discussed in the following sections.</p>
-          <h3>6.1 Fana's Entities</h3>
+          <h3 id="fanas-entities">6.1 Fána's Entities</h3>
+          <p>Fána has three closely related entities at its core: Attributes, Audiences, and Flags. Together, they enable Fana users to target intentional segments of users within their application.</p>
+          <h4>6.1.1 Attributes</h4>
+          <p>The first entity that a Fána user would need to consider is attributes. Attributes are qualities that serve to describe a user. The values assigned to these attributes–which can be of data types strings, numbers, or booleans–are used to evaluate a user’s eligibility against the conditions within an audience. </p>
+          <p>After creating an attribute, Fana users can include it when creating and configuring their audiences.</p>
+          <h5>Creating an Attribute in the Fána Dashboard</h5>
+          <p>Below is an example of the Fana dashboard creating three new attributes, one of each data type. </p>
+          <iframe width="560" height="315" src="https://www.youtube.com/embed/2dfDe3ZgLkg" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+          <h5>User Context</h5>
+          <p>A user context is an object composed of attributes-value pairs and is defined within the Fána user’s application code to provide relevant information about a user. Note that the user context is developer-defined, so it can consist of any data that the developer has access to. For example, a user context can have attributes describing the user’s location, age, and whether they are a student. </p>
+          <figure>
+            <img alt="" src="assets/images/image39.png">
+            <figcaption>Fig 6.1.1: Example of a user context object</figcaption>
+          </figure>
+          <p>This user context is then used to assess whether the specific user satisfies the conditions to be part of the targeted audience.</p>
+          <h4>6.1.2 Audiences and Conditions</h4>
+          <p>Audiences are reusable collections of logical conditions. Conditions are made up of three parts: </p>
+          <ul>
+            <li>Attribute: the user qualities described above</li>
+            <li>Target value: the value that is to be compared against the user context’s attribute value. In the previous attribute example, the state attribute is a string, so any string value can be designated as the target value: “CA” or “WA”. </li>
+            <li>Operator: how the attribute and target value will be compared against each other. The available options differ based on the attribute’s data type. String-typed attributes have various options, such as “is equal to”, “contains”, “starts with”, and can even support multiple values with the “is in” operator.</li>
+          </ul>
+          <p>An example of a whole condition is <b>“state is in CA, WA”</b>. This means that any user context with a state attribute with its value as “CA” or “WA” would meet this condition.</p>
+          <p>Audiences can also configure their "combination indicator", which is how the evaluation should be handled if there is more than one condition. </p>
+          <ul>
+            <li>If the combination is “ANY”, it means that the user context only needs to meet one of the conditions to qualify for this audience. </li>
+            <li>If the combination is “ALL”, it means that the user context must meet all conditions to qualify for this audience.</li>
+          </ul>
+          <h5>Creating an Audience in the Fana Dashboard</h5>
+          <p>Below is an example of the Fána Dashboard creating a new audience called West Coast Students that has two conditions with an “ALL” combination. To qualify for this audience, the user context must meet all conditions: `student` attribute set to `true`, and `state` attribute set to one of  `CA`, `WA`, or `OR`.</p>
+          <iframe width="560" height="315" src="https://www.youtube.com/embed/8jahB63zlKk" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+          <p>After creating an audience, the Fána user can target it when creating and configuring their flags. </p>
+          <h4>6.1.3 Flags</h4>
+          <p>Flags are the core entity of Fána. Each flag is meant to represent a specific feature that the Fána user wishes to test. They consist of four properties:</p>
+          <ul>
+            <li>a <b>title</b>, which helps the Fána user to easily distinguish between flags;</li>
+            <li>a <b>key</b>, the identifier string that is used to evaluate a specific flag when using the Fána SDK within the developer’s app code;</li>
+            <li>a <b>toggle</b>, which indicates whether this flag is enabled or disabled; and</li>
+            <li>a list of <b>targeted audiences</b> for which the user context must qualify for any to evaluate TRUE for this flag.</li>
+          </ul>
+          <h5>Creating a Flag in the Fana Dashboard</h5>
+          <p>Below is an example of the Fana Dashboard creating a new flag to target the previously created West Coast Students audience.</p>
+          <iframe width="560" height="315" src="https://www.youtube.com/embed/N2FZ59VGXjc" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+          <p>Once a flag is created, the developer can use the flag key in their code when calling the evaluateFlag method, provided by the Fána SDK (more about SDKs in <a href="#sdk-section">section 6.6</a>). </p>
+          <p>The following sections will discuss the overall architecture, different components of Fána design in detail, and how these components communicate within an event-driven architecture to support real-time updates and audience targeting. </p>
           <h3>6.2 Architecture Overview</h3>
+          <p>Fána’s architecture is divided into four major components: the Manager Platform, the Data store and Pub/Sub (Redis cluster), the Flag Bearer, and the Fána software development kits (SDKs). While the Manager Platform, Redis cluster, and the Flag Bearer can be containerized and hosted separately, the SDK component is embedded into the client’s application and configured to communicate with Fána’s Flag Bearer.</p>
+          <p>These components make up Fána’s event-driven architecture (EDA), where events--like changes or updates to flags--are used to trigger communication between the components.</p>
+          <p>There are three key pieces to any EDA: </p>
+          <ul>
+            <li>An event producer, which generates the events</li>
+            <li>An event router, which directs the event notification to its destination</li>
+            <li>An event consumer, which uses the event notification for some purpose</li>
+          </ul>
+          <p>True to EDA philosophy, Fána’s components are designed so that each component is decoupled and can accommodate scaling.</p>
+          <figure>
+            <img src="assets/images/image14.gif" alt="" />
+            <figcaption>Fig 6.2: High-level overview of Fána's architecture</figcaption>
+          </figure>
+          <p>A general overview of the major components and their responsibilities are as follows: </p>
+          <ul>
+            <li><b>The Manager Platform</b> consists of the UI dashboard, which is used to manage flags and audiences. It also includes the Manager API which is in charge of handling data changes and serves the dashboard. This represents the Producer component of the EDA.</li>
+            <li><b>The Flag Bearer</b> manages SDK initializations, evaluates flag data for each user context, and forwards updates to the SDKs in real-time. This represents the Router component of the EDA.</li>
+            <li><b>The Data store</b> keeps a copy of the flag data from the Manager so that the Flag Bearer can use it for initializations. It also serves as the Pub/Sub service, where the Flag Bearer can subscribe to different channels for real-time updates.</li>
+            <li><b>The client and server-side SDKs</b> are embedded into the developer’s application and are responsible for enabling flag evaluation within the app. This represents the Consumer component of the EDA.</li>
+          </ul>
           <h3>6.3 Manager Platform</h3>
+          <p>The Manager Platform serves as the single source of truth for data related to flags and consists of a dashboard user interface and the backend API server that connects to a persistent PostgreSQL database. </p>
+          <figure>
+            <img alt="" src="assets/images/image4.gif" />
+            <figcaption>Fig 6.3: Lower-level overview of Fána's Manager</figcaption>
+          </figure>
+          <p>The dashboard is the entry point for developers to the Fána feature flag platform. To utilize audience-based feature flags in their applications, developers need to first create a set of attributes, audiences, and flags through the Fána dashboard as discussed in <a href="#fanas-entities">Section 6.1.</a></p>
+          <p>The Manager is a Go application that serves the static files for that dashboard. It also fulfills several other responsibilities:</p>
+          <ul>
+            <li>Serving the RESTful API the dashboard consumes to manage flag data</li>
+            <li>Executing all database operations by way of an ORM to reinforce the data model at the application layer</li>
+            <li>Handling communication of flag data and updates to the SDK side of the architecture by publishing those messages both to the Pub/Sub and the Redis store</li>
+          </ul>
+          <img alt="" src="assets/images/image9.png"/>
+          <p>While this collection of responsibilities doesn’t strictly observe the separation of concerns principle–as, for example, serving the dashboard from a separate server–it didn’t impact the overall complexity of the application, nor limit the scalability of the other components. Ultimately the architectural simplicity afforded by bundling these responsibilities into a single service was more appropriate for Fána’s purpose.</p>
           <h3>6.4 Flag Bearer</h3>
+          <p>The Flag Bearer sits in between the SDK clients and the Manager Platform. The Flag Bearer is responsible for managing SDK connections and evaluating flag values. </p>
+          <p>Whenever an SDK tries to make an initial connection, the Flag Bearer is responsible for verifying that the SDK key in the request is valid. It then compiles the relevant data and sends it back to the SDK.</p>
+          <figure>
+            <img alt="" src="assets/images/image26.gif" />
+            <figcaption>Fig 6.4: SDK Initialization Request Flow</figcaption>
+          </figure>
+          <p>During the initialization process, the SDK will also request to open a persistent streaming connection. The Flag Bearer keeps track of these connections so it can forward the proper updates from the Manager to the SDKs that need them. </p>
+          <p>The Flag Bearer has multiple endpoints for the SDKs to connect to:</p>
+          <ul>
+            <li>Client-side initialization: The Flag Bearer uses the user context provided in the initialization request to pre-evaluate all flags, which are returned to the client-side SDK. </li>
+            <li>Server-side initialization: The Flag Bearer returns the full flag ruleset to the server-side SDK. Server-side SDKs evaluate flags locally at runtime.</li>
+            <li>Stream connection: The Flag Bearer subscribes the SDK to its respective stream (server or client-side), enabling real-time updates to flag data to be reflected in the SDKs using server-sent events (SSE).</li>
+          </ul>
+          <h4 id="eval-logic">6.4.1 Flag Evaluation</h4>
+          <p>When the Flag Bearer receives an initialization request specifically from a client-side SDK, the Flag Bearer must pre-evaluate the flags for the provided user context (the reasons for this are described in <a href="#pre-eval">section 6.6.2</a>). </p>
+          <p>The Flag Bearer starts by fetching the full flag ruleset from the Redis data store. If the data store is empty or down, then the Flag Bearer will request the data from the Manager backend directly. The Bearer then processes the ruleset, along with the user context provided in the request to generate and respond with boolean evaluations of the flags back to the client-side SDK.</p>
+          <figure>
+            <img alt="" src="assets/images/image12.png"/>
+            <figcaption>Fig 6.4.1: Evaluation Logic Tree</figcaption>
+          </figure>
+          <p>Here’s an example of how the evaluation logic works:</p>
+          <ol>
+            <li>A flag key, `experimental_page`, is selected for evaluation. </li>
+            <ul>
+              <li>This flag key contains information about its targeted audiences, including the conditions that a user must fulfill to be considered part of this audience. </li>
+              <li>The`experimental_page` only has one targeted audience for simplicity.</li>
+            </ul>
+            <li>The flag toggle setting is assessed.</li>
+            <ul>
+              <li>If the flag is OFF, the <b>`experimental_page` will not be served.</b></li>
+              <li>If the flag is ON, the flag’s audience list is inspected to assess whether the user context meets the audience conditions.</li>
+            </ul>
+            <li>The targeted audience has a combination indicator that determines how each audience is evaluated.</li>
+            <ul>
+              <li>The ANY combination means that the user must fulfill at least one of the conditions to be eligible.</li>
+              <li>The ALL combination means that the user must fulfill ALL conditions to be eligible.</li>
+            </ul>
+            <li>From there, each condition of the audience is evaluated. Depending on the combination indicator, the evaluation can be short-circuited so it doesn’t always need to process every condition.</li>
+            <ul>
+              <li>If the combination is ANY, <b>`experimental_page` will be served</b> as soon as the condition evaluates TRUE. If the user context never meets a condition, <b>`experimental_page` will not be served.</b></li>
+              <li>If the combination is ALL, if the user context meets all conditions, <b>`experimental_page` will be served</b>. However, as soon as the user context fails to meet a condition, <b>`experimental_page` will not be served. </b></li>
+            </ul>
+          </ol>
+          <p>Note that flags can have more than one audience. In these cases, if a user is not eligible for an audience, the function will continue looking at the rest of the audiences until it finds one for which the user is eligible. The user only needs to be eligible for one audience to receive a final evaluation of TRUE.</p>
           <h3>6.5 Redis Store and Publisher/Subscriber</h3>
-          <h3>6.6 Software Development Kits</h3>
-          <h3>6.7 Final Architecture/h3>
-            
+          <p>The purpose of the Redis Cluster in Fána’s architecture is twofold: Fána uses Redis as a caching layer for flag data and as a message broker in a publisher/subscriber (pub/sub) model to push real-time updates to SDKs. </p>
+          <p>The Redis key-value data store holds the flag data for the Flag Bearer. The Manager backend is responsible for refreshing the data store with the latest flag data whenever an update is made to a flag or audience. Whenever a change is made, the backend writes to the database and the Redis data store. The data store is accessed by the Flag Bearer when any SDK initialization requests come in.</p>
+          <p>A common pattern to facilitate uni-directional communication in event-driven architectures like Fana’s is to utilize a message broker. Message brokers are useful intermediaries, particularly in scenarios where one component is sending messages to potentially many components in a distributed system<sup class="c15"><a href="#ftnt7">[7]</a></sup>. Fana’s Redis cluster also serves as a message broker to facilitate the event-driven messages between the Manager backend API service and the Flag Bearer. The primary benefit of the pub/sub model is that it decouples communications between the Manager and Flag Bearer, where the Manager publishes messages to various channels to which the Flag Bearer subscribes. A key feature of a pub/sub model is that the publisher does not need to know about any of the subscribers or do anything different for a consumer to start receiving messages. This worked well for Fána, as the Flag Bearer layer can scale without the Manager needing to know about any new Flag Bearer nodes that come online. Each Bearer node automatically subscribes to the appropriate channels and can start receiving event-driven messages immediately.</p>
+          <p>Fána’s pub/sub implements two different message channels for flag updates: general flag updates and flag toggle updates. When any changes are made to the flag resources, the Manager backend will both write to the data store and publish a message with the updated data to the Pub/Sub, which is forwarded by the Flag Bearer to existing or open SSE connections with SDKs.</p>
+          <figure>
+            <img alt="" src="assets/images/image43.gif"/>
+            <figcaption>Fig 6.5: Data flow when a change is made to flag resources</figcaption>
+          </figure>
+          <p>When an SDK sends a request to initialize an SSE connection with the Flag Bearer, the Bearer verifies the SDK key and subscribes the client to the appropriate Pub/Sub channel based on whether it is a client-side or server-side SDK. Once the SSE connection succeeds, the SDK can receive real-time updates whenever changes to a relevant flag happen.</p>
+          <h3 id="sdk-section">6.6 Software Development Kits</h3>
+          <p>Fána provides SDKs for React (client-side) and Node.js (server-side). The SDKs are responsible for instilling applications with the ability to evaluate flag keys. The initialization and flag processing is quite different between the client and server SDKs, so we will discuss each separately. </p>
+          <figure>
+            <img src="assets/images/image36.gif" alt=""/>
+            <figcaption>Fig 6.6: Scaled SDK Initialization Data Flow</figcaption>
+          </figure>
+          <h4>6.6.1 Server-Side SDK</h4>
+          <p>To initialize a server-side SDK, the developer must provide two required arguments - the server-side SDK key and the address of the Flag Bearer. Then, whenever the server is run, the SDK takes care of reaching out to the Bearer with the provided information, which verifies the SDK key. Upon verification, the Bearer sends back the entire flag ruleset, which the SDK stores in memory, ready for evaluation.</p>
+          <figure>
+            <img alt="" src="assets/images/image47.png"/>
+            <figcaption>Fig 6.6.1: How the Bearer initializes server-side SDKs</figcaption>
+          </figure>
+          <p>During the initialization process, the SDK will also set up an SSE connection with the Flag Bearer using the EventSource API. This allows the SDK to receive real-time updates to flag data from the Flag Bearer.</p>
+          <p>Now, the developer is ready to use the evaluateFlag method. By passing in the flag key and user context, the SDK will determine whether this particular user qualifies for this flag based on the stored ruleset, and returns true or false. There is also the option to provide a default boolean value in case the provided flag key isn’t found, in cases of initialization failures. This evaluation process follows the same decision tree illustrated in <a href="#eval-logic">section 6.4.1.</a></p>
+          <h4>6.6.2 Client-Side SDK</h4>
+          <p>Initializing the client-side SDK is different due to privacy concerns (elaborated on later in this section). In addition to the key and Bearer address, the developer must also pass in the user context object. </p>
+          <figure>
+            <img src="assets/images/image21.png" alt="" />
+            <figcaption>Fig 6.6.2a: SDK setup in a React app</figcaption>
+          </figure>
+          <p>Whenever a client instance is spun up, the client SDK, similarly to the server SDK, reaches out to the Bearer with the provided information. After verifying the SDK key, the Bearer pre-evaluates all of the flag keys using the provided user context, and only sends back a hashmap of flag keys with true and false values. This hashmap is then stored in memory in the SDK.</p>
+          <figure>
+            <img src="assets/images/image3.png" alt="" />
+            <figcaption>Fig 6.6.2b: Client-Side SDK initialization requires evaluation</figcaption>
+          </figure>
+          <p>During the initialization process, the SDK will also set up an SSE connection with the Flag Bearer using the EventSource API. This allows the SDK to receive real-time toggle-offs from the Flag Bearer.</p>
+          <p>The pre-evaluation makes using the <code>evaluateFlag</code> method simpler for the client-side SDK. Instead of having to process each flag based on user context, the SDK simply needs to check the boolean value associated with the flag key since it’s all been pre-evaluated. The developer is also able to provide a default boolean value, similar to the server-side SDK. </p>
+          <figure>
+            <img src="assets/images/image10.png" alt=""/>
+            <figcaption>Fig 6.6.2c: Using the SDK's <code>evaluateFlag</code> method</figcaption>
+          </figure>
+          <h5 id="pre-eval">Pre-Evaluating Client-Side SDK Data</h5>
+          <p>Flag targeting rules can potentially be set up with sensitive user information, such as names, email addresses, or IP addresses. This can be a concern when working with client-side SDKs, since, if targeting information is being requested on the browser, anyone can see the response. </p>
+          <p>To mitigate the exposure of sensitive user information, we designed the Flag Bearer to act as a proxy for the data, as described above. This means the only thing that the client browser receives is a list of keys and boolean values, and the potentially sensitive targeting information stays hidden.</p>
+          <h4>6.6.3 SDK Keys</h4>
+          <p>Fána users are provided two separate SDK keys within the Fána dashboard; one for the client-side SDK and one for the server-side SDK. These SDK keys are meant to be provided during the SDK initialization process for the Flag Bearer to validate the request. If the key does not match the Flag Bearer’s key set, the connection request is denied and no data is sent.</p>
+          <h5>Separate SDK Keys</h5>
+          <p>Having separate keys for client and server-side SDKs was an important decision based on security concerns. If Fána only provided one shared SDK key, a savvy malicious end user can get the SDK key from the client-side request (the SDK key is public since it’s a browser request). The user can then use this same SDK key to make a server-side request to fetch the full ruleset, which may contain sensitive data as described in <a href="#pre-eval">Pre-Evaluating Client-Side SDK Data.</a> </p>
+          <figure>
+            <img src="assets/images/image38.png"/>
+            <figcaption>Fig 6.6.3: Key must match the endpoint to receive data</figcaption>
+          </figure>
+          <p>By having two separate SDK keys, the server-side SDK key should never be revealed publicly, thus keeping the sensitive user data safe. </p>
+          <p>If the server-side SDK key does end up getting compromised, the Fána dashboard offers the option to regenerate either SDK key, invaliding the current one. The regeneration process is not to be taken lightly, as it will block any future initialization attempts until the old SDK key is replaced within the application code. </p>
+          <h3>6.7 Final Architecture</h3>
+          <p>The final architecture of Fana with the four major components shown in detail is below.  </p>
+          <figure>
+            <img src="assets/images/image22.gif"/>
+            <figcaption>Fig 6.7: Fána's Final Architecture Data Flow</figcaption>
+          </figure>
+          <p>Having established the above architecture and the responsibility of each of the components, the following section will discuss how to install Fána’s SDKs and deploy the platform for use.</p>
           <h2>7 Deploying Fana</h2>
           <br />
           <h2>Docker</h2>
