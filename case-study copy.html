@@ -3,8 +3,13 @@
 
 <head>
   <meta charset="utf-8" />
-  <title>Fána Feature Flags • Case Study</title>
+  <title>Fána • Case Study</title>
   <meta content="width=device-width, initial-scale=1" name="viewport" />
+  <meta name="image" property="og:image" content="assets/images/fana-thumbnail.png">
+  <meta name="title" property="og:title" content="Fána">
+  <meta name="description" content="Fána is an open-source feature flagging platform specializing in audience targeting to enable developers to deploy and test new features in production with confidence.">
+  <meta property="og:type" content="Website">
+  <meta name="author" content="Fána">
   <link href="assets/css/style.css" rel="stylesheet" type="text/css" />
   <script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.26/webfont.js" type="text/javascript"></script>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lexend:regular,500,600,700" media="all" />
@@ -885,23 +890,102 @@
 
         <h3>8.3 Communicating Between Components</h3>
         <br />
+        <p>One of the primary requirements driving our inter-component communication decisions was enabling real-time evaluation of our flag data. The reason real-time updates are critical to Fána goes back to the core dynamic for choosing a feature flag platform for testing in production in the first place. Specifically, if something goes wrong with a feature deployment, that issue’s impact on users is a function of the response time to that addressing the issue. In other words, rolling back bad code as soon as possible is essential. There were two parts of our data’s distribution journey. The first step was getting the flag rules from the database to the Flag Bearer nodes, and the second step was getting those flag rules out to the SDKs.</p>
+        <h4>8.3.1 Manager to Flag Bearer Communication</h4>
+        <p>The Manager needs some way to communicate updates to the Flag Bearer in real-time. Three options we explored for this were API requests, Webhooks, and Publisher/Subscriber messaging.</p>
+        <h5>API Requests</h5>
+        <p>One approach to serving the Flag Bearer would be to establish the Manager as an API server to respond to requests from the Flag Bearer. This is a well-established pattern but it came with some tradeoffs:</p>
+        <ul>
+          <li>Manager would still be required to serve every request for flag rule data, which compounds its responsibilities and increases queries to the database.</li>
+          <li>The Flag Bearer does not have a way of knowing when updates are made to the flag rule set. This means that the Flag Bearer needs to make requests to the Manager to ensure that the most current rule set is being served whenever a new SDK request comes in. Additionally, Flag Bearer would not have access to any rule set updates in real time.</li>
+        </ul>
         <figure>
-          <img src="assets/images/image20.png" alt="">
+          <img src="assets/images/case_visuals/api_comms.png" alt="API Model">
+          <figcaption>Fig 8.3.1a: Consumer must initiate communication and wait for a response from the API Server</figcaption>
+        </figure>
+        <h5>Webhooks</h5>
+        <p>The first iterations of Fána utilized webhooks for event-driven communication between the Manager and Flag Bearer. With webhooks, Flag Bearer was able to maintain a copy of the most current rule set in-memory, eliminating the need to make requests to the Manager at every SDK request. However, in order to accommodate different types of events (i.e., flag and audience updates versus simple flag toggle updates), the design would need to consider the following:</p>
+        
+        <ul>
+          <li>Creating multiple URI endpoints to distinguish flag rule updates from flag toggle updates; or</li>
+          <li>Providing the entire flag data within the payload for each updates, which would impose an additional computational load on the Flag Bearer to parse and determine what update has been made to the flag rule set.</li>
+        </ul>
+         
+        <p>While webhooks allow the Flag Bearer to receive real-time updates and reduce traffic to the Manager, it still adds complexity to the Flag Bearer to handle ingesting and distributing of event notifications.</p>
+        <figure>
+          <img src="assets/images/case_visuals/webhooks.png" alt="Webhooks Model">
+          <figcaption>Fig 8.3.1b: Communication is unidirectional and data is pushed from the Producer to Consumer</figcaption>
+        </figure>
+        
+        <h5>Publisher/Subscriber Model</h5>
+        
+        
+        <p>The pub/sub model is another event-driven approach that decouples the message sender from the message consumer by introducing a separate component between them. In Fána’s case, the Manager was the publisher and the Flag Bearer was the subscriber. Placing the pub/sub in between the Manager and the Flag Bearer met two main criteria:</p>
+        <figure>
+          <img src="assets/images/case_visuals/pubsub_generic.png" alt="pubsub model">
+          <figcaption>Fig 8.3.1c: A Publish Subscribe model allows messages to be broadcast asyncrhonously to many subscribers</figcaption>
+        </figure>
+        <ul>
+          <li>Achieving real-time, event-driven communication for flag updates.</li>
+          <li>Handling different types of updates through the use of message topics or channels</li>
+        </ul>
+        
+        <p>Additionally, this architecture minimized the communication responsibilities and dependencies of the Manager and the Flag Bearer components, allowing greater flexibility and ability to independently scale as needed.</p>
+        <figure>
+          <img src="assets/images/case_visuals/pubsub_fana.png" alt="Fana's pubsub">
           <figcaption></figcaption>
         </figure>
+         
+        <p>Once the Flag Bearer subscribes to receive real-time event notifications, it would need a way to communicate them to the SDKs. The following sections will discuss the different options considered to facilitate this final leg of the communication.</p>
+        
+        <h4>8.3.2 Flag Bearer to SDK Communication</h4>
+        <p>Three options were considered for the SDKs to be able to retrieve the latest set of flag data from the Flag Bearer: polling, WebSockets, and SSE.</p>
+        <h5>Polling</h5>
+        <p>With polling, the SDK makes requests for updated data from the Flag Bearer at a specified interval. For example, setting the polling interval to 30 seconds, all connected SDKs will ping the Flag Bearer every 30 seconds, and the Bearer would provide each of them with the newest ruleset. </p>
         <figure>
-          <img src="assets/images/image32.png" alt="">
-          <figcaption></figcaption>
+          <img src="assets/images/case_visuals/polling.png" alt="Polling Model">
+          <figcaption>Fig 8.3.2a: Client periodically sends requests to Server to check for new data</figcaption>
         </figure>
+        
+        
+        <p>Since updates are only reflected at the interval points, this is not truly a real-time solution. The majority of the polling requests may end up being unnecessary since they could just be fetching the same set of data for extended periods. It may also be a significant load on the Bearer, considering that the number of connected SDKs can be quite high, depending on the number of applications utilizing Fana’s SDKs.</p>
+        <h5>WebSockets</h5>
+        <p>A WebSocket is a full-duplex (bi-directional) communication channel between a client application and a server. After the client’s connection request is accepted by the server, they can now freely communicate.</p>
+        
+        <p>While this does allow for real-time updates, the bi-directional communication is not necessary--only the Flag Bearer needs to relay information to the SDKs. Additionally, WebSockets does not automatically attempt to reconnect if the connection is dropped.</p>
+        <figure>
+          <img src="assets/images/case_visuals/websockets.png" alt="WebSockets Model">
+          <figcaption>Fig 8.3.2b: Client and Server can both initiate communication</figcaption>
+        </figure>
+        
+        <h5>SSE</h5>
+        <p>Last, SSEs are similar to WebSockets in that they open a persistent connection between a client application and server, except SSEs are uni-directional. They also have built-in support for re-establishing dropped connections every 60 seconds. The combination of these traits made SSEs the most appropriate real-time communication mechanism for sending flag updates from the Flag Bearer to the SDKs. </p>
+        <figure>
+          <img src="assets/images/case_visuals/sse.png" alt="SSE Model">
+          <figcaption>Fig 8.3.2c: Clients subscribe to a stream of event messages generated by the Server when a new event occurs</figcaption>
+        </figure>
+        </br>
         <!-- Section 9 -->
         <h2>9 Summary & Future Work</h2>
         <br />
-        <p>
-    
-        </p>
+        <p>In summary, Fána provides a lightweight, easy-to-manage feature flagging platform that enables developers to test their features in production by creating flexible and reusable audiences to target their feature release to. This gives developers the control and confidence to gradually release a feature to more and more users over time. </p>
+        <p>The team recognizes that there is potential for improvement in Fána’s functionality. The following are some additional improvements to consider in the future that could add value to developers utilizing Fána.</p>
+        
         <h3>9.1 Edge Computing</h3>
+        <p>In a future iteration of Fána’s cloud architecture, the SDK initialization times could be optimized by leveraging edge computing via a network of servers provided by content delivery networks (CDNs). Instead of connecting to the Flag Bearer, SDKs can connect to the nearest CDN node to retrieve flag evaluations. A serverless function that runs at the edge, such as an AWS Lambda@Edge or Cloudflare Worker, could execute the flag evaluation logic much closer to the SDK, reducing overall latency. This node could also access flag data closer to the edge, such as from AWS CloudFront or a Cloudflare K/V. The result is a lower-latency round-trip for initializations, which could boost loading speeds for applications utilizing Fána.</p>
+        
+        <p>LaunchDarkly saw a 10x improvement in connection speed performance when leveraging their CDN, from 250ms per initialization down to 25ms.<sup class="c23 c15"><a href="#ftnt8" id="ftnt_ref8">[8]</a></sup></p>
+        
         <h3>9.2 Supporting Multiple Environments</h3>
+        <p>Some feature flag service providers offer the ability to create multiple environments (such as development, staging, and production) for each flag. This can be useful in situations where a developer wants to test changes to the flag’s targeting logic in an environment without affecting the flag status that is live in the production environment.</p>
+        
+        <p>While Fána’s current design does not support SDK key creation for specific environments, users can still leverage Fána’s flexibility to duplicate a flag and limit the audience to test groups. While this can be worked around via creating test flags or even rolling out another instance of the architecture, multiple environments could add more convenience for the developers. </p>
+        
         <h3>9.3 Collecting Metrics</h3>
+        <p>Some feature flag platforms offer flag-related metric collection to support more robust management of feature flags. For example, a developer could see how many times a flag was evaluated in the code as well as the count of true or false results. The developer may also be able to see the date the flag was last evaluated.</p>
+        
+        <p>This kind of data in a flag management platform would make it easier for developers to manage technical debt by more easily identifying feature flags that are no longer in use or do not need to remain in the codebase. By leveraging these metrics, developers could create workflows to periodically remove flags from features that transition from experimental or temporary to permanent after a feature has been successfully released to the general audience for a certain amount of time. To accommodate metric collection in the future, a data pipeline from the SDKs to the Manager can be set up to centralize and analyze this data. </p>
+        
         <br />
   
           <!-- References -->
