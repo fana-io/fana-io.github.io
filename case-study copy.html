@@ -900,7 +900,7 @@
           <li>The Flag Bearer does not have a way of knowing when updates are made to the flag rule set. This means that the Flag Bearer needs to make requests to the Manager to ensure that the most current rule set is being served whenever a new SDK request comes in. Additionally, Flag Bearer would not have access to any rule set updates in real time.</li>
         </ul>
         <figure>
-          <img src="assets/images/image20.png" alt="">
+          <img src="assets/images/case_visuals/api_comms.png" alt="API Model">
           <figcaption>Fig 8.3.1a: Consumer must initiate communication and wait for a response from the API Server</figcaption>
         </figure>
         <h5>Webhooks</h5>
@@ -913,7 +913,7 @@
          
         <p>While webhooks allow the Flag Bearer to receive real-time updates and reduce traffic to the Manager, it still adds complexity to the Flag Bearer to handle ingesting and distributing of event notifications.</p>
         <figure>
-          <img src="assets/images/image32.png" alt="">
+          <img src="assets/images/case_visuals/webhooks.png" alt="Webhooks Model">
           <figcaption>Fig 8.3.1b: Communication is unidirectional and data is pushed from the Producer to Consumer</figcaption>
         </figure>
         
