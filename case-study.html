@@ -39,7 +39,7 @@
         <div class="navigation-left">
           <a href="/" aria-current="page" class="brand w-nav-brand w--current" aria-label="home">
             <img
-            src="assets/images/fana_graphic_color_white.svg"
+            src="assets/images/fana_graphic_color_forwhitebg.svg"
             alt=""
             class="template-logo"
             width="50px"
@@ -60,7 +60,7 @@
         <div class="navigation-right">
           <div class="login-buttons">
             <a href="https://github.com/fana-io" target="_blank">
-              <span style="color: #ffffff">
+              <span style="color: #15416C">
                 <i class="fab fa-github fa-lg"></i>
               </span>
             </a>
@@ -70,183 +70,935 @@
       <div class="w-nav-overlay" data-wf-ignore="" id="w-nav-overlay-0"></div>
     </div>
   </div>
-  <div id="sidebar" class="toc">
-  </div>
-  <div class="section header">
-    <article class="container case-study-container">
-      <div class="hero-text-container">
-        <h1 class="h1 centered">Case Study (Coming Soon!)</h1>
+  <div class="cs-horizontal">
+    <div id="sidebar" class="toc">
+    </div>
+    <div class="section header">
+      <article class="container case-study-container">
+        <div class="hero-text-container">
+          <div id="case-study">
+          <h1 class="h1 centered">Case Study</h1>
+          </br >
+          <!-- Section 1 -->
+          <h2 class="h2">1 Introduction</h2>
+          <br>
+          <p>
+            Fána is an open-source feature flag management platform that facilitates testing in production. Software developers can release new features to targeted subsets of their user base, starting with their most bug-tolerant users like beta testers. By providing developers the means to toggle new features “on” for progressively larger audiences, Fána offers a tool with which to control testing in production safely and responsibly.
+          </p>
+          <br />
+          <p>This case study will cover the tradeoffs of testing new features in production, how F&aacute;na enables it, and the engineering decisions the F&aacute;na team made during the implementation process.</p>  
+          <br />
+          <!-- Section 2 -->
+          <h2>2 Testing</h2>
+          <br />
+          <p>
+            When introducing new features to end users, developers need a process that is optimized for the speed and reliability of the release. Modern development teams often integrate automated testing approaches into their deployment pipelines (such as Continuous Integration and Continuous Delivery pipelines) to create rapid, iterative workflows in which frequent code changes can be deployed faster. Automated testing suites can include tests that range from specific in scope, such as unit testing for single functions and components, to more broadly scoped tests that test interactions between the components of the system and prevent regression from newly merged code (e.g.integration tests and end-to-end-tests).
+          </p>
+          <p>
+            Testing helps verify that an application as a whole behaves as intended and that the smaller components within the application communicate and integrate as expected<sup class="c15"><a href="#ftnt2" id="ftnt_ref2">[2]</a></sup>. In short, testing is the foundation required to "move fast with confidence"<sup class="c15"><a href="#ftnt3" id="ftnt_ref3">[3]</a></sup>
+          </p>  
+          <h3>2.1 Testing Before Production</h3>
+          <p>
+            While automated testing can prevent code regression, it does not always represent how real users may interact with a system or fully portray the environment in which the system will run. Staging environments attempt to replicate production with as high fidelity as possible to facilitate more robust and precise insight into the quality and behavior of the system at large. 
+          </p>
+          <!-- <figure>
+            <img alt="" src="assets/images/image5.png" style="width: 332.49px; height: 251.50px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);"title="martin kleppmann quote">
+          </figure> -->
+          <br />
+          <figure>
+            <img alt="" src="assets/images/image44.png" title="staging environment">
+            <figcaption>Fig. 2.1: Testing pipeline</figcaption>
+          </figure>
+          <p>
+            While the staging environment aims to replicate the production environment for pre-production testing, many outside factors can influence the performance and quality of a system running in production that is difficult or cost-prohibitive to replicate. Examples include:
+            <ul>
+              <li >Race conditions</li>
+              <li >Unpredictable user behavior</li>
+              <li >Disparate runtime environments</li>
+              <li >Unreliable networks, including external service dependencies</li>
+              <li >Unpredictable user behavior</li>
+           </ul>
+          </p>
+          <figure>
+            <img alt="" src="assets/images/image23.png" style="width: 332.49px; height: 251.50px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);" title="charity majors quote">
+          </figure>
+          <br />
+          <p>
+            Even with robust automated testing suites and sophisticated staging environments, the production environment still represents unpredictable and irreplicable conditions.
+          </p>
+          <h3>2.2 Testing in Production Responsibly</h3>
+          <br />
+          <p>
+            If the combination of external factors and user behavior in production environments are unique and difficult to replicate in controlled staging environments, developers will ultimately need to gain confidence in the reliability of their release in ways that pre-production environments cannot offer. A better way to ensure a system’s expected performance under real user strain and in real network conditions is to evaluate that system in a real production environment. Deliberately testing in production, then, is a powerful tool by which developers can boost an application’s resilience to survive errors and bugs.
+          </p>
+          <p>
+            However, testing in production invariably poses some risk. Any change to a system can unexpectedly disrupt that system. Deployment failures can degrade the user experience, damage the reputation of both the product and the company, expose the company to regulatory scrutiny, or negatively impact the bottom line<sup class="c15"><a href="#ftnt4" id="ftnt_ref4">[4]</a></sup>.
+          </p>
+          <p>
+            Developers who test in production can leverage different tools to limit the negative outcomes in event that a new release doesn’t behave as intended. One pattern to help mitigate these risks is to roll out changes to users gradually: releasing new code to incrementally larger portions of the user base. This approach helps limit the blast radius, the reach that any problematic changes might cause, by increasingly exposing those changes only as confidence permits.
+          </p>
+          <br />
+          <figure>
+            <img alt="" src="assets/images/image42.png" title="gradual release">
+            <figcaption>Fig. 2.2: Gradual release of features</figcaption>
+          </figure>
+          <br />
+          <p>
+            A further evolution of that approach is structuring the stages of that incremental release pattern to target specific types of users or audiences. For example, a new feature can be enabled solely for developers initially, then for a beta testing user group, then early adopters, etc., and finally to the general audience of all users. Exposing unproven portions of the application only to more bug-tolerant subsets of the user base first offers a safe way to mitigate the negative outcomes of a problematic release.
+          </p>
+          <br />
+          <figure>
+            <img alt="" src="assets/images/image1.png" title="targeting bug tolerant users">
+            <figcaption>Fig. 2.3: Developers can target specific audiences to incrementally increase the number and type of users a feature is released to.</figcaption>
+          </figure>
+          <br />
+          <p>
+            As an example of this, when cloud computing company VMware started to outgrow an important conversation view feature in their app, engineers decided it was time for a total rewrite. While implementing the changes, VMware needed both to evaluate user feedback and investigate any issues experienced by real users, while also limiting its impact to the general audience of production users.
+          </p>
+          <br/>
+          <figure>
+            <img alt="" src="assets/images/image33.png" title="VMware case study">
+            <figcaption>Fig. 2.4: VMware needed a way to evaluate real user feedback and investigate bugs in production without negatively impacting their entire user base.</figcaption>
+          </figure>
+          <p>
+            To meet their requirements, VMware chose to release improvements of their feature rewrite to only a small group of targeted users at first. The release would be open to the general audience only after iterating with those selected users. The process was executed within the context of a continuous release cadence by way of selective testing in production<sup class="c23 c15"><a href="#ftnt5" id="ftnt_ref5">[5]</a></sup>.
+          </p>
+          <br/>
+          <!-- Section 3-->
+          <h2>3 Possible Solutions</h2>
+          <br />
+          <p>
+            There are a few ways to target specific subsets of users with experimental features. For smaller teams looking to execute similar deployment approaches to that of VMware’s feature rewrite, two common approaches worth considering are Multiple Deployments and Feature Flags.
+          </p>
+          <h3>3.1 Multiple Deployments</h3>
+          <br />
+          <p>
+            A multiple deployments strategy consists of cloning the production environment and implementing the new feature as a separate production version. A load balancer then takes care of routing the desired users between both the original and new environments. 
+          </p>
+          <figure>
+            <img alt="" src="assets/images/image25.png" title="Multiple deployment">
+            <figcaption>Fig. 3.1: Multiple Deployment</figcaption>
+          </figure>
+          </br>
+          <p>
+            This comes with the benefit of cleaner application code - since routing logic is abstracted to the load balancer, each environment is solely responsible for serving one version of the application. This ensures that the newer version of the application won’t contain code references to older versions, which reduces the potential for technical debt.
+          </p>
+          <p>
+            Multiple deployment strategies like canary deployments also have the benefit of zero downtime for users: if something goes wrong with the new app, developers can route all traffic to the stable version. Also, since the routing logic can be configured in the load balancer, users can be selectively routed to specific experiences.
+          </p>
+          <p>
+            There are some trade-offs to consider with multiple deployments. For example, if three new features are included in a deployment but one of the features is not performing as expected, the entire application, including the two satisfactory features, would need to be rolled back. 
+          </p>
+          <p>
+            Additionally, deploying multiple production environments requires additional cloud or infrastructure resources since there is more than one production environment online. This adds cost and complexity to monitoring and maintaining the additional infrastructure. As the need for more versions of deployments grows, more environments would need to be added to test different variants of the application which would compound the cost, complexity, and overhead to manage the various deployments.
+          </p>
+          <p>
+            The next section will explore using feature flags as an alternative approach to releasing a new feature.
+          </p>
+          <h3>3.2 Feature Flags</h3>
+          <br />
+          <p>
+            A feature flag strategy, at the lowest level, consists of conditional statements that determine whether or not a given block of code should be executed. In more practical terms, a feature flag is a means by which to gate the execution of that code based on the context or environment in which it is evaluated. In the below example, if the <code>evaluateFlag</code> function for the <code>new_feature</code> evaluates to <code>true</code>, the user receives the new feature; otherwise, they receive the old feature.
+          </p>
+          <figure>
+            <img alt="" src="assets/images/image6.png" title="feature flag code">
+            <figcaption>Fig 3.2: Feature Flag Code Snippet</figcaption>
+          </figure>
+          <p>
+            Because feature flags rely on conditional flow in the source code itself, feature flags are usually configurable remotely, meaning that the codebase can be untouched while the routing or evaluation logic changes.
+          </p>
+          <p>
+            As with multiple deployments, feature flags come with the benefits of zero downtime thanks to the ability to remotely toggle functionality. Additionally, since each new feature is tied to a single flag, this provides the advantage of selective rollbacks. If one out of three features is buggy, the developer can simply toggle that one feature off, while the others stay on.
+          </p>
+          <p>
+            Since the conditional logic lives in the code, this adds maintenance complexity to the codebase. This feature flag lifecycle requires increased coordination between teams, including the status of active and inactive flags, when old flags can be removed, and who has ownership over the governance of different flags. If not carefully managed, feature flags can contribute to significant technical debt, so proper governance is a significant consideration.
+          </p>
+          <p>
+            In addition to governance, there’s also the cost of additional loading time due to the network communication required to evaluate flags, since they’re managed remotely. 
+          </p>
+          <h3>3.3 Comparing Multiple Deployments and Feature Flags</h3>
+          <br />
+          <p>
+            To revisit the key criteria for testing in production responsibly, the solution for a team looking to deploy a new feature with confidence needs to both facilitate strategic user group targeting and allow quick rollback of a problematic release with minimal downtime.
+          </p>
+          <p>Further, to execute this approach as a smaller team looking to maintain high-velocity code deployment cycles, there are additional flexibility requirements:</p>
+          <ul>
+            <li>Resolving an issue with one feature shouldn’t disrupt the deployment cycle of other changes. If possible, handling problematic features should have minimal collateral consequences for the deployment at large.</li>
+            <li>Deployments and releases should be decoupled. By decoupling feature changes deployed to production from feature changes exposed to users, developer teams can reconcile long-term development with rapid iteration, as with VMware’s feature rewrite.</li>
+          </ul>
+          <p>
+            While feature flags introduce additional complexity to a codebase, they present some distinct advantages as a deployment tool. While both a multiple deployments strategy and feature flagging strategy can accommodate targeted release audiences and expedient rollbacks, a unique benefit of a feature flag platform is the flexibility to isolate individual features to enable or disable them as needed.
+          </p>
+          <br />
+          <!-- Section 4 -->
+          <h2>4 Feature Flags for Testing in Production</h2>
+          <br />
+          <p>
+            Feature flagging provides the ability to selectively enable and disable features in real-time, as well as the ability to designate specific audiences. This makes it a suitable tool for developers who wish to test their features in production. 
+          </p>
+          <p>
+            There are various ways to use feature flags, including standard toggling, percentages, unique identifiers, and attribute/audience targeting.
+          </p>
+          <h3>4.1 Standard Toggling</h3>
+          <br />
+          <p>
+            Feature flags offer the ability to remotely toggle functionality entirely on or off. This means that the developer can use a flag to release a new feature, and if something goes wrong, it can simply be toggled off.
+          </p>
+          <figure>
+            <img alt="" src="assets/images/image13.png" title="standard toggle">
+            <figcaption>Fig. 4.1: Standard Toggles</figcaption>
+          </figure>
+          <br />
+          <p>
+            However, this new feature would be released to the entire user base. Despite the speed of remotely toggling the feature off, wholesale release to the entire user base may still not be the best option because all users are potentially impacted by any problems. A standard toggle functionality isn’t quite enough - there needs to be a way to narrow down the number of impacted users.
+          </p>
+          <h3>4.2 Percentage Rollout</h3>
+          <br />
+          <p>
+            One way to limit the impact is to adopt a percentage rollout strategy. This means users will be randomly sorted into the available experiences based on a predetermined rate. For example, the developer can have the new feature only serve 10% of their user base, limiting the potential impact of a negative experience.
+          </p>
+          <figure>
+            <img alt="" src="assets/images/image24.png" title="percentage rollout">
+            <figcaption>Fig 4.2: Percentage Rollout</figcaption>
+          </figure>
+          <br />
+          <p>
+            While this helps, percentage rollout does not provide granular control over which users will receive certain experiences. This may be more suited for a use case like A/B testing where the developer wants to be indiscriminate about who sees the experimental feature. A more responsible approach to testing in production would be to specifically target bug-tolerant users.
+          </p>
+          <h3>4.3 Unique Identifier</h3>
+          <br />
+          <p>
+            One way to target bug-tolerant users is to designate a flag rule to target users based on a list of unique identifiers. This identifier can be anything that the developer has access to, like an user ID or IP address.
+          </p>
+          <br />
+          <figure>
+            <img alt="" src="assets/images/image29.png" title="conditions screenshot">
+            <figcaption>Fig 4.3: Sample Conditions</figcaption>
+          </figure>
+          <br />
+          <p>
+            This may allow developers to target specific, bug-tolerant users at an extremely granular level, but it can become cumbersome as the target user list increases. This can bloat the flag ruleset and make it difficult to manage when targets need to be removed.
+          </p>
+          <h3>4.4 Attributes</h3>
+          <br />
+          <p>
+            Feature flags can also be evaluated based on developer-defined attributes. These attributes can be general user information, session context, environment values, etc, used to conditionally execute application logic. Attributes facilitate a more flexible and granular approach by providing a means for deliberate criteria-based targeting according to whatever evaluation context values a developer chooses.
+          </p>
+          <figure>
+            <img alt="" src="assets/video/attribute_targeting.gif" title="">
+            <!-- <img alt="" src="assets/images/image45.png" title=""> -->
+            <figcaption>Fig 4.4: Target features to specific users by specifying attributes</figcaption>
+          </figure>
+          <p>As a simple example, a developer may be trying to target west coast students for an experimental new feature. Their flag would target anyone that has their <code>student</code> attribute as <code>true</code> and their <code>state</code> attribute as either <code>California</code>, <code>Washington</code>, or <code>Oregon</code>.</p>
+          <p>To take it a step further, developers can bundle multiple attribute-based rules into groups, also known as audiences. Audiences are a set of rules based on those developer-defined attributes, and they offer convenient reuse of targeting criteria composed of more complexly structured or numerous attribute qualifications. This can be particularly useful when testing in production, as a single audience can be used for any flags without needing to redeclare any of the conditional attribute logic.</p>
+          <figure>
+            <img alt="" src="assets/video/aud_targeting.gif">
+            <!-- <img alt="" src="assets/images/image15.png"> -->
+            <figcaption>Fig 4.5: Audiences abstract away attribute-level targeting and can be comprised of multiple conditions for many attributes. Only users who meet all audience conditions are served the feature.</figcaption>
+          </figure>
+          
+          
+          <p>If the example feature flag is modified to target West Coast Students, a developer can bundle the <code>student</code> and <code>state</code> attribute together to create this audience. Now, instead of having to set <code>student</code> to <code>true</code>, and <code>state</code> is <code>California</code>, <code>state</code> is <code>Washington</code>, or <code>state</code> is <code>Oregon</code> on every flag, developers can simply declare those requirements on the <code>West Coast Students</code> audience, and reuse the audience in the relevant flags. </p>
+          <p>To revisit the case of VMware as a practical example, the engineering team utilized feature flags wherever the old feature was referenced in the existing code base, allowing different versions to be served to different users.</p>
+          <p>To implement this, VMware created three separate user audiences: Developers, Beta users, and General Audience. Different versions of the feature were served by evaluating the respective feature flags based on which audience the user was in. This allowed the engineering team to test new iterations of the feature in production as they were being developed.</p>
+          <figure>
+            <img alt="" src="assets/video/vmware_steps.gif" title="">
+            <figcaption>Fig 4.6: VMWare progressively rolled out a new feature to targeted user groups before releasing to all users</figcaption>
+          </figure>
+          <p>Once a feature completed the requisite internal testing, it was made available to Beta target users. This allowed VMware to collect user feedback and update the feature accordingly. Because of the size and scope of the feature, VMware iterated through several testing cycles within the Beta users before moving forward to the General Audience stage in production. Still, even once the feature was generally available, it could be easily disabled via toggling off the associated feature flag. This would effectively revert to the pre-rewrite version of the feature while issues with the new version could be investigated and resolved.</p>
+          <br />
+          <!-- Section 5 -->
+          <h2>5 Implementation Options</h2>
+          <br />
+          <p>
+            There are several options for teams looking to release features to targeted audiences using a feature flagging solution:  DIY in-house implementations, commercial options, and open source options. Each of these options has distinct strengths and limitations. 
+          </p>
+          <h3>5.1 DIY</h3>
+          <br />
+          <p>
+            One option to implement a feature flag platform is to build an in-house solution. To build one that accommodates audience-targeted releases, a DIY solution would need the following core features:
+          </p>
+          <ul>
+            <li>flags need to be evaluated dynamically and in real-time to execute rapid rollback of problematic features; and</li>
+            <li>a consistent data source to hold flag definitions and audience rules (i.e., which users see which features).</li>
+          </ul>
+          <p>
+            Architecturally, the above requirements necessitate several components to implement a minimum viable feature flagging platform:
+          </p>
+          <ul>
+            <li>a persistent backend data store for flag data, audience rules, and the targeted attributes that compose those rules;</li>
+            <li>a developer interface, like on a command line, by which to manage that data set: toggle flags, adjust the composition of audiences, etc; and
+            </li>
+            <li>a package embedded in the application to execute the appropriate flagged features within the application.</li>
+          </ul>
+          <figure>
+            <img alt="" src="assets/images/image19.png" title="" style="max-width: 500px;">
+            <figcaption>Fig 5.1: Minimum necessary components to build an in-house feature flag solution</figcaption>
+          </figure>
+          <p>Going the DIY route is a viable option, however, building a bootstrapped feature flagging system poses many challenges. For example, Atlassian built its own system primarily to control feature releases. As more teams wanted to use the in-house solution, developing and maintaining the solution became unwieldy. In addition, the system was not designed for users outside the development team. Without a user interface, teams outside of engineering, such as Product Management, had to rely on the engineering teams to manage flags and run beta tests<sup class="c15"><a href="#ftnt6">[6]</a></sup>.</p>
+          <p>While building an in-house feature flagging platform provides deployment flexibility and data privacy, there’s a significant cost in the engineering team’s available resources to build the tool out initially. It’s also likely that continuous work may be required to maintain and evolve the platform moving forward. </p>
+          <h3>5.2 Open Source</h3>
+          <br />
+          <p>
+            Leveraging open-source solutions is a cost-effective way to build a customizable feature flagging platform while maintaining data ownership through self-hosting. However, there are a few notable tradeoffs of using open-source solutions:
+          </p>
+          <ul>
+            <li>Fewer features out of the box than paid solutions (e.g. experimentation, A/B testing, workflow integrations)</li>
+            <li>Dedicated resources are needed to build and maintain the feature flag platform</li>
+          </ul>
+          <p>
+            For example, FeatureHub offers the ability to implement targeting rules based on attributes but can't group those rules into audiences. The lack of reusability results in a tedious process of manually setting up rules on each flag. Unleash does have audience targeting (they call them segments), but only as part of their paid tier plan. Therefore, building off these open source solutions still requires additional resources to implement flexible and reusable audience targeting functionality.
+          </p>
+          <h3>5.3 Paid Solutions</h3>
+          <br />
+          <p>
+            If the resource overhead or lead time of implementing a DIY solution is too prohibitive, there are several robust feature flag solutions on the market offering paid options. These save time and resources by providing rich and convenient functionality out of the box. There are a few options here, but two of the most popular ones on the market are LaunchDarkly and Optimizely.</p><p>Premium solutions come with a lot of built-in support for experimentation, workflow integrations, and segment targeting. However, with these benefits come some considerations:
+          </p>
+          <ul>
+            <li>Paid: These enterprise solutions generally come at a monthly cost per user, which may be prohibitive to smaller companies.</li>
+            <li>Not self-hosted: Flag data and targeting rules may contain sensitive information, which can be problematic in cases where there are legal restrictions on sharing data with a third-party service.</li>
+          </ul>
+          <h3>5.4 Weighing the Options</h3>
+          <br />
+          <p>
+            A developer team looking for a high degree of flexibility and customization can opt for open source solutions to bootstrap a DIY feature flag implementation or build an in-house solution completely from the ground up. While flexible and customizable, the DIY route may carry a higher cost in the way of engineering resources and time.</p><p>For broad and proven functionality out of the box, a developer team can consider enterprise solutions like LaunchDarkly. However, some tradeoffs with using third-party services include:</p>
+<ul>
+  <li>Cost: Certain features like targeting specific audiences are accessible through a monthly fee.</li>
+  <li>Data privacy: Potentially exposing user data or company data to a third-party database.</li>
+</ul><figure>
+  <img alt="" src="assets/images/image28.png" title="">
+  <figcaption>Fig 5.4: Comparison between DIY and paid feature flagging solutions</figcaption>
+</figure>
+<p>For a smaller, budget-conscious developer team that needs audience targeting functionality for testing in production out of the box and prioritizes data privacy, an enterprise solution may not meet their needs.</p>
+<p>The next section introduces a Fána, an alternative feature flagging solution.</p>
+  
+          <!-- Section 6 -->
+          <h2>6 Fána</h2>
+          <br />
+          <p>
+            Fána occupies a niche in between, offering the ready-made functionality of a third-party solution for development teams specifically looking to utilize feature flagging to target audiences. 
+          </p>
+          <p>Fána offers a simple, straightforward frontend interface to manage flags and their audiences, making for an intuitive user experience with a minimal learning curve. Additionally, while Fána can be self-hosted to maximize data hosting flexibility, the option of automated deployment to Amazon Web Services (AWS) offers the most convenient solution to get up and running more quickly.</p>
+          <figure>
+            <img alt="" src="assets/images/image35.png">
+            <figcaption>Fig 6.0: Comparing Fána as an alternative solution</figcaption>
+          </figure>
+          <br />
+          <p>Fána allows developers to selectively serve experiences to particular audiences while allowing for remote toggling in real-time. This is particularly useful when testing in production, as developers may wish to only serve a new feature to bug-tolerant groups. If something goes wrong, developers can flip the switch to turn that feature off instantly. </p>
+          <p>To implement audience targeting via feature flags, Fána makes use of a set of entities to describe, assess, and target users as discussed in the following sections.</p>
+          <h3 id="fanas-entities">6.1 Fána's Entities</h3>
+          <p>Fána has three closely related entities at its core: Attributes, Audiences, and Flags. Together, they enable Fána users to target intentional segments of users within their application.</p>
+          <h4>6.1.1 Attributes</h4>
+          <p>The first entity that a Fána user would need to consider is attributes. Attributes are qualities that serve to describe a user. The values assigned to these attributes–which can be of data types strings, numbers, or booleans–are used to evaluate a user’s eligibility against the conditions within an audience. </p>
+          <p>After creating an attribute, Fána users can include it when creating and configuring their audiences.</p>
+          <h5>Creating an Attribute in the Fána Dashboard</h5>
+          <p>Below is an example of the Fána dashboard creating three new attributes, one of each data type. </p>
+          <figure>
+            <iframe width="560" height="315" src="https://www.youtube.com/embed/2dfDe3ZgLkg" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen class="round-shadow"></iframe>
+            <figcaption>Fig 6.1.1: Creating attribute using the Fána Dashboard</figcaption>
+          </figure>
+          <h5>User Context</h5>
+          <p>A user context is an object composed of attributes-value pairs and is defined within the Fána user’s application code to provide relevant information about a user. Note that the user context is developer-defined, so it can consist of any data that the developer has access to. For example, a user context can have attributes describing the user’s location, age, and whether they are a student. </p>
+          <figure>
+            <img alt="" src="assets/images/image39.png">
+            <figcaption>Fig 6.1.2: Example of a user context object</figcaption>
+          </figure>
+          <p>This user context is then used to assess whether the specific user satisfies the conditions to be part of the targeted audience.</p>
+          <h4>6.1.2 Audiences and Conditions</h4>
+          <p>Audiences are reusable collections of logical conditions. Conditions are made up of three parts: </p>
+          <ul>
+            <li>Attribute: the user qualities described above</li>
+            <li>Target value: the value that is to be compared against the user context’s attribute value. In the previous attribute example, the <code>state</code> attribute is a string, so any string value can be designated as the target value: <code>CA</code> or <code>WA</code>. </li>
+            <li>Operator: how the attribute and target value will be compared against each other. The available options differ based on the attribute’s data type. String-typed attributes have various options, such as <code>is equal to</code>, <code>contains</code>, <code>starts with</code>, and can even support multiple values with the <code>is in</code> operator.</li>
+          </ul>
+          <p>An example of a whole condition is <b>“state is in CA, WA”</b>. This means that any user context with a state attribute with its value as <code>CA</code> or <code>WA</code> would meet this condition.</p>
+          <p>Audiences can also configure their combination indicator, which is how the evaluation should be handled if there is more than one condition. </p>
+          <ul>
+            <li>If the combination is <code>any</code>, it means that the user context only needs to meet one of the conditions to qualify for this audience. </li>
+            <li>If the combination is <code>all</code>, it means that the user context must meet all conditions to qualify for this audience.</li>
+          </ul>
+          <h5>Creating an Audience in the Fána Dashboard</h5>
+          <p>Below is an example of the Fána Dashboard creating a new audience called West Coast Students that has two conditions with an <code>all</code> combination. To qualify for this audience, the user context must meet all conditions: <code>student</code> attribute set to <code>true</code>, and <code>state</code> attribute set to one of  <code>CA</code>, <code>WA</code>, or <code>OR</code>.</p>
+          <figure>
+            <iframe width="560" height="315" src="https://www.youtube.com/embed/8jahB63zlKk" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen class="round-shadow"></iframe>
+            <figcaption>Fig 6.1.3: Creating an audience in the Fána Dashboard</figcaption>
+          </figure>
+          <p>After creating an audience, the Fána user can target it when creating and configuring their flags. </p>
+          <h4>6.1.3 Flags</h4>
+          <p>Flags are the core entity of Fána. Each flag is meant to represent a specific feature that the Fána user wishes to test. They consist of four properties:</p>
+          <ul>
+            <li>a <b>title</b>, which helps the Fána user to easily distinguish between flags;</li>
+            <li>a <b>key</b>, the identifier string that is used to evaluate a specific flag when using the Fána SDK within the developer’s app code;</li>
+            <li>a <b>toggle</b>, which indicates whether this flag is enabled or disabled; and</li>
+            <li>a list of <b>targeted audiences</b> for which the user context must qualify for any to evaluate <code>true</code> for this flag.</li>
+          </ul>
+          <h5>Creating a Flag in the Fána Dashboard</h5>
+          <p>Below is an example of the Fána Dashboard creating a new flag to target the previously created West Coast Students audience.</p>
+          <figure>
+            <iframe width="560" height="315" src="https://www.youtube.com/embed/N2FZ59VGXjc" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen class="round-shadow"></iframe>
+          </figure>
+          <figcaption>Fig 6.1.4: Creating a flag in the Fána Dashboard</figcaption>
+          <p>Once a flag is created, the developer can use the flag key in their code when calling the evaluateFlag method, provided by the Fána SDK (more about SDKs in <a href="#sdk-section">section 6.6</a>). </p>
+          <p>The following sections will discuss the overall architecture, different components of Fána design in detail, and how these components communicate within an event-driven architecture to support real-time updates and audience targeting. </p>
+          <h3>6.2 Architecture Overview</h3>
+          <p>Fána’s architecture is divided into four major components: the Manager Platform, the Data store and Pub/Sub (Redis cluster), the Flag Bearer, and the Fána software development kits (SDKs). While the Manager Platform, Redis cluster, and the Flag Bearer can be containerized and hosted separately, the SDK component is embedded into the client’s application and configured to communicate with Fána’s Flag Bearer.</p>
+          <p>These components make up Fána’s event-driven architecture (EDA), where events--like changes or updates to flags--are used to trigger communication between the components.</p>
+          <p>There are three key pieces to any EDA: </p>
+          <ul>
+            <li>An event producer, which generates the events</li>
+            <li>An event router, which directs the event notification to its destination</li>
+            <li>An event consumer, which uses the event notification for some purpose</li>
+          </ul>
+          <p>True to EDA philosophy, Fána’s components are designed so that each component is decoupled and can accommodate scaling.</p>
+          <figure>
+            <img src="assets/images/image14.gif" alt="" />
+            <figcaption>Fig 6.2: High-level overview of Fána's architecture</figcaption>
+          </figure>
+          <p>A general overview of the major components and their responsibilities are as follows: </p>
+          <ul>
+            <li><b>The Manager Platform</b> consists of the UI dashboard, which is used to manage flags and audiences. It also includes the Manager API which is in charge of handling data changes and serves the dashboard. This represents the Producer component of the EDA.</li>
+            <li><b>The Flag Bearer</b> manages SDK initializations, evaluates flag data for each user context, and forwards updates to the SDKs in real-time. This represents the Router component of the EDA.</li>
+            <li><b>The Data store</b> keeps a copy of the flag data from the Manager so that the Flag Bearer can use it for initializations. It also serves as the Pub/Sub service, where the Flag Bearer can subscribe to different channels for real-time updates.</li>
+            <li><b>The client and server-side SDKs</b> are embedded into the developer’s application and are responsible for enabling flag evaluation within the app. This represents the Consumer component of the EDA.</li>
+          </ul>
+          <h3>6.3 Manager Platform</h3>
+          <p>The Manager Platform serves as the single source of truth for data related to flags and consists of a dashboard user interface and the backend API server that connects to a persistent PostgreSQL database. </p>
+          <figure>
+            <img alt="" src="assets/images/image4.gif" />
+            <figcaption>Fig 6.3.1: Lower-level overview of Fána's Manager</figcaption>
+          </figure>
+          <p>The dashboard is the entry point for developers to the Fána feature flag platform. To utilize audience-based feature flags in their applications, developers need to first create a set of attributes, audiences, and flags through the Fána dashboard as discussed in <a href="#fanas-entities">Section 6.1.</a></p>
+          <p>The Manager is a Go application that serves the static files for that dashboard. It also fulfills several other responsibilities:</p>
+          <ul>
+            <li>Serving the RESTful API the dashboard consumes to manage flag data</li>
+            <li>Executing all database operations by way of an ORM to reinforce the data model at the application layer</li>
+            <li>Handling communication of flag data and updates to the SDK side of the architecture by publishing those messages both to the Pub/Sub and the Redis store</li>
+          </ul>
+          <figure>
+            <img alt="" src="assets/images/image9.png"/>
+            <figcaption>Fig 6.3.2: Manager executes database operations using an ORM</figcaption>
+          </figure>
+          <h3>6.4 Flag Bearer</h3>
+          <p>The Flag Bearer sits in between the SDK clients and the Manager Platform. The Flag Bearer is responsible for managing SDK connections and evaluating flag values. </p>
+          <p>Whenever an SDK tries to make an initial connection, the Flag Bearer is responsible for verifying that the SDK key in the request is valid. It then compiles the relevant data and sends it back to the SDK.</p>
+          <figure>
+            <img alt="" src="assets/images/image26.gif" />
+            <figcaption>Fig 6.4: SDK Initialization Request Flow</figcaption>
+          </figure>
+          <p>During the initialization process, the SDK will also request to open a persistent streaming connection. The Flag Bearer keeps track of these connections so it can forward the proper updates from the Manager to the SDKs that need them. </p>
+          <p>The Flag Bearer has multiple endpoints for the SDKs to connect to:</p>
+          <ul>
+            <li>Client-side initialization: The Flag Bearer uses the user context provided in the initialization request to pre-evaluate all flags, which are returned to the client-side SDK. </li>
+            <li>Server-side initialization: The Flag Bearer returns the full flag ruleset to the server-side SDK. Server-side SDKs evaluate flags locally at runtime.</li>
+            <li>Stream connection: The Flag Bearer subscribes the SDK to its respective stream (server or client-side), enabling real-time updates to flag data to be reflected in the SDKs using server-sent events (SSE).</li>
+          </ul>
+          <h4 id="eval-logic">6.4.1 Flag Evaluation</h4>
+          <p>When the Flag Bearer receives an initialization request specifically from a client-side SDK, the Flag Bearer must pre-evaluate the flags for the provided user context (the reasons for this are described in <a href="#pre-eval">section 6.6.2</a>). </p>
+          <p>The Flag Bearer starts by fetching the full flag ruleset from the Redis data store. If the data store is empty or down, then the Flag Bearer will request the data from the Manager backend directly. The Bearer then processes the ruleset, along with the user context provided in the request to generate and respond with boolean evaluations of the flags back to the client-side SDK.</p>
+          <figure>
+            <img alt="" src="assets/images/image12.png"/>
+            <figcaption>Fig 6.4.1: Evaluation Logic Tree</figcaption>
+          </figure>
+          <p>Here’s an example of how the evaluation logic works:</p>
+          <ol>
+            <li>A flag key, <code>experimental_page</code>, is selected for evaluation. </li>
+            <ul>
+              <li>This flag key contains information about its targeted audiences, including the conditions that a user must fulfill to be considered part of this audience. </li>
+              <li>The<code>experimental_page</code> only has one targeted audience for simplicity.</li>
+            </ul>
+            <li>The flag toggle setting is assessed.</li>
+            <ul>
+              <li>If the flag is OFF, the <b><code>experimental_page</code> will not be served.</b></li>
+              <li>If the flag is ON, the flag’s audience list is inspected to assess whether the user context meets the audience conditions.</li>
+            </ul>
+            <li>The targeted audience has a combination indicator that determines how each audience is evaluated.</li>
+            <ul>
+              <li>The <code>any</code> combination means that the user must fulfill at least one of the conditions to be eligible.</li>
+              <li>The <code>all</code> combination means that the user must fulfill all conditions to be eligible.</li>
+            </ul>
+            <li>From there, each condition of the audience is evaluated. Depending on the combination indicator, the evaluation can be short-circuited so it doesn’t always need to process every condition.</li>
+            <ul>
+              <li>If the combination is <code>any</code>, <b><code>experimental_page</code> will be served</b> as soon as the condition evaluates <code>true</code>. If the user context never meets a condition, <b><code>experimental_page</code> will not be served.</b></li>
+              <li>If the combination is <code>all</code>, if the user context meets all conditions, <b><code>experimental_page</code> will be served</b>. However, as soon as the user context fails to meet a condition, <b><code>experimental_page</code> will not be served. </b></li>
+            </ul>
+          </ol>
+          <p>Note that flags can have more than one audience. In these cases, if a user is not eligible for an audience, the function will continue looking at the rest of the audiences until it finds one for which the user is eligible. The user only needs to be eligible for one audience to receive a final evaluation of <code>true</code>.</p>
+          <h3>6.5 Redis Store and Publisher/Subscriber</h3>
+          <p>The purpose of the Redis Cluster in Fána’s architecture is twofold: Fána uses Redis as a caching layer for flag data and as a message broker in a publisher/subscriber (pub/sub) model to push real-time updates to SDKs. </p>
+          <p>The Redis key-value data store holds the flag data for the Flag Bearer. The Manager backend is responsible for refreshing the data store with the latest flag data whenever an update is made to a flag or audience. Whenever a change is made, the backend writes to the database and the Redis data store. The data store is accessed by the Flag Bearer when any SDK initialization requests come in.</p>
+          <p>A common pattern to facilitate uni-directional communication in event-driven architectures like Fána’s is to utilize a message broker. Message brokers are useful intermediaries, particularly in scenarios where one component is sending messages to potentially many components in a distributed system<sup class="c15"><a href="#ftnt7">[7]</a></sup>. Fána’s Redis cluster also serves as a message broker to facilitate the event-driven messages between the Manager backend API service and the Flag Bearer. The primary benefit of the pub/sub model is that it decouples communications between the Manager and Flag Bearer, where the Manager publishes messages to various channels to which the Flag Bearer subscribes. A key feature of a pub/sub model is that the publisher does not need to know about any of the subscribers or do anything different for a consumer to start receiving messages. This worked well for Fána, as the Flag Bearer layer can scale without the Manager needing to know about any new Flag Bearer nodes that come online. Each Bearer node automatically subscribes to the appropriate channels and can start receiving event-driven messages immediately.</p>
+          <p>Fána’s pub/sub implements two different message channels for flag updates: general flag updates and flag toggle updates. When any changes are made to the flag resources, the Manager backend will both write to the data store and publish a message with the updated data to the Pub/Sub, which is forwarded by the Flag Bearer to existing or open SSE connections with SDKs.</p>
+          <figure>
+            <img alt="" src="assets/images/image43.gif"/>
+            <figcaption>Fig 6.5: Data flow when a change is made to flag resources</figcaption>
+          </figure>
+          <p>When an SDK sends a request to initialize an SSE connection with the Flag Bearer, the Bearer verifies the SDK key and subscribes the client to the appropriate Pub/Sub channel based on whether it is a client-side or server-side SDK. Once the SSE connection succeeds, the SDK can receive real-time updates whenever changes to a relevant flag happen.</p>
+          <h3 id="sdk-section">6.6 Software Development Kits</h3>
+          <p>Fána provides SDKs for React (client-side) and Node.js (server-side). The SDKs are responsible for instilling applications with the ability to evaluate flag keys. The initialization and flag processing is quite different between the client and server SDKs, so we will discuss each separately. </p>
+          <figure>
+            <img src="assets/images/image36.gif" alt=""/>
+            <figcaption>Fig 6.6: Scaled SDK Initialization Data Flow</figcaption>
+          </figure>
+          <h4>6.6.1 Server-Side SDK</h4>
+          <p>To initialize a server-side SDK, the developer must provide two required arguments - the server-side SDK key and the address of the Flag Bearer. Then, whenever the server is run, the SDK takes care of reaching out to the Bearer with the provided information, which verifies the SDK key. Upon verification, the Bearer sends back the entire flag ruleset, which the SDK stores in memory, ready for evaluation.</p>
+          <figure>
+            <img alt="" src="assets/images/image47.png"/>
+            <figcaption>Fig 6.6.1: The Bearer initializes server-side SDKs with the full flag ruleset</figcaption>
+          </figure>
+          <p>During the initialization process, the SDK will also set up an SSE connection with the Flag Bearer using the EventSource API. This allows the SDK to receive real-time updates to flag data from the Flag Bearer.</p>
+          <p>Now, the developer is ready to use the evaluateFlag method. By passing in the flag key and user context, the SDK will determine whether this particular user qualifies for this flag based on the stored ruleset, and returns true or false. There is also the option to provide a default boolean value in case the provided flag key isn’t found, in cases of initialization failures. This evaluation process follows the same decision tree illustrated in <a href="#eval-logic">section 6.4.1.</a></p>
+          <h4>6.6.2 Client-Side SDK</h4>
+          <p>Initializing the client-side SDK is different due to privacy concerns (elaborated on later in this section). In addition to the key and Bearer address, the developer must also pass in the user context object. </p>
+          <figure>
+            <img src="assets/images/image21.png" alt="" />
+            <figcaption>Fig 6.6.2a: SDK setup in a React app</figcaption>
+          </figure>
+          <p>Whenever a client instance is spun up, the client SDK, similarly to the server SDK, reaches out to the Bearer with the provided information. After verifying the SDK key, the Bearer pre-evaluates all of the flag keys using the provided user context, and only sends back a hashmap of flag keys with true and false values. This hashmap is then stored in memory in the SDK.</p>
+          <figure>
+            <img src="assets/images/image3.png" alt="" />
+            <figcaption>Fig 6.6.2b: Client-Side SDK initialization requires pre-evaluation of flags</figcaption>
+          </figure>
+          <p>During the initialization process, the SDK will also set up an SSE connection with the Flag Bearer using the EventSource API. This allows the SDK to receive real-time toggle-offs from the Flag Bearer.</p>
+          <p>The pre-evaluation makes using the <code>evaluateFlag</code> method simpler for the client-side SDK. Instead of having to process each flag based on user context, the SDK simply needs to check the boolean value associated with the flag key since it’s all been pre-evaluated. The developer is also able to provide a default boolean value, similar to the server-side SDK. </p>
+          <figure>
+            <img src="assets/images/image10.png" alt=""/>
+            <figcaption>Fig 6.6.2c: Using the SDK's <code>evaluateFlag</code> method</figcaption>
+          </figure>
+          <h5 id="pre-eval">Pre-Evaluating Client-Side SDK Data</h5>
+          <p>Flag targeting rules can potentially be set up with sensitive user information, such as names, email addresses, or IP addresses. This can be a concern when working with client-side SDKs, since, if targeting information is being requested on the browser, anyone can see the response. </p>
+          <p>To mitigate the exposure of sensitive user information, we designed the Flag Bearer to act as a proxy for the data, as described above. This means the only thing that the client browser receives is a list of keys and boolean values, and the potentially sensitive targeting information stays hidden.</p>
+          <h4>6.6.3 SDK Keys</h4>
+          <p>Fána users are provided two separate SDK keys within the Fána dashboard: one for the client-side SDK and one for the server-side SDK. These SDK keys are meant to be provided during the SDK initialization process for the Flag Bearer to validate the request. If the key does not match the Flag Bearer’s key set, the connection request is denied and no data is sent.</p>
+          <h5>Separate SDK Keys</h5>
+          <p>Having separate keys for client and server-side SDKs was an important decision based on security concerns. If Fána only provided one shared SDK key, a savvy malicious end user can get the SDK key from the client-side request (the SDK key is public since it’s a browser request). The user can then use this same SDK key to make a server-side request to fetch the full ruleset, which may contain sensitive data as described in <a href="#pre-eval">Pre-Evaluating Client-Side SDK Data.</a> </p>
+          <figure>
+            <img src="assets/images/image38.png"/>
+            <figcaption>Fig 6.6.3: Key must match the endpoint to receive data</figcaption>
+          </figure>
+          <p>By having two separate SDK keys, the server-side SDK key should never be revealed publicly, thus keeping the sensitive user data safe. </p>
+          <p>If the server-side SDK key does end up getting compromised, the Fána dashboard offers the option to regenerate either SDK key, invaliding the current one. The regeneration process is not to be taken lightly, as it will block any future initialization attempts until the old SDK key is replaced within the application code. </p>
+          <h3>6.7 Final Architecture</h3>
+          <p>The final architecture of Fána with the four major components shown in detail is below.  </p>
+          <figure>
+            <img src="assets/images/image22.gif"/>
+            <figcaption>Fig 6.7: Fána's Final Architecture Data Flow</figcaption>
+          </figure>
+          <p>Having established the above architecture and the responsibility of each of the components, the following section will discuss how to deploy the platform for use.</p>
+          <h2>7 Deploying Fána</h2>
+          <br />
+          <p>There are two options for deploying Fána: self-hosted using Docker or cloud-hosted on AWS. Developers interested in using Fana in a self-hosted environment (non-AWS) or are interested in testing out Fana in their local development environment can deploy the entire Fana stack with one command using Docker. Alternatively, developers that are already familiar with the AWS environment can quickly deploy the Fánastack using the provided AWS Cloud Development Kit (CDK) template.</p>
+          <h3>7.1 Docker</h3>
+          <p>Developers who want the flexibility of self-hosting can choose to utilize Fána’s containerized components using Docker. This option allows for Fána to be managed and deployed across any environment of the developer’s choosing.</p>
 
-        
-      </div>
-        <h2>Team</h2>
+          <figure>
+            <img src="assets/video/dockerize.gif" alt="fana-docker-images">
+            <figcaption>Fig 7.1a: Fana's components are containerized into two Docker images hosted on DockerHub.</figcaption>
+          </figure>
+          <p>Developers can also deploy using Fána’s docker-compose.yml file, which will configure and launch the platform in a single Docker network. In this network, the built-in DNS resolution and service definitions in the YAML file will allow the containers to communicate with each other as required. </p>
+
+          <figure>
+            <img src="assets/images/image17.png" alt="docker-yaml-file" style="max-width: 225px;">
+            <img src="assets/video/terminal/docker_compose_terminal.gif" alt="docker-compose-up" class="round-shadow" style="max-width: 350px;">
+            <img src="assets/images/image7.png" alt="docker-network" style="max-width: 350px;">
+            <figcaption>Fig 7.1b: Docker Compose spins up all services necessary to run Fana in a Docker Network.</figcaption>
+          </figure>
+          <p>The <code>docker-compose.yml</code> file references Fána’s latest images for each component as well as utilizing the latest and maintained Redis and PostgreSQL images, which are defined to start up in their dependency order. Developers can configure the necessary administrative variables as well as expose necessary host and port endpoints in the environment file to deploy Fána.</p>
+          <h3>7.2 AWS</h3>
+          <p>Developers who want to leverage AWS’s managed Elastic Container Services (ECS) hosted on AWS Fargate, a serverless, pay-as-you-go compute engine, can choose to utilize Fána’s CDK App to spin up a Fána platform on the cloud.</p>
+          <figure>
+            <img src="assets/images/image27.gif" alt="cdk deploy all command provisions AWS cloud resources in one command" class="round-shadow">
+            <figcaption style="padding-top: 1em;">Fig 7.2.1: CDK is infrastructure as code and simplifies deployment using one CLI command to provision AWS cloud resources.</figcaption>
+          </figure>
+          <p>Configuring and deploying each resource on the AWS Console can be error-prone and difficult to replicate. Instead, the cloud infrastructure can be programmatically defined through the CDK framework, which allows developers to specify their infrastructure as code for a much simpler and more convenient deployment process.</p>
+          <figure>
+            <img src="assets/images/image37.png" alt="">
+            <figcaption>Fig 7.2.2: CDK stacks are synthesized into a CloudFormation template under the hood.</figcaption>
+          </figure>
+          <p>The Fána CDK App defines certain shared resources including a Virtual Private Cloud, which defines a virtual network for the infrastructure to operate in. It also creates a new instance of Relational Database Service (RDS) running on PostgresQL to serve as the persistent database for the platform, as well as an Elasticache Redis cluster to serve as the data store and Pub/Sub.
+          </p>
+          <p>The shared resources are then referenced in Fána’s overall stack. To allow appropriate traffic through the Fána platform’s network, a new security group is configured and created. A load-balanced Fargate Service that hosts the Fána’s Manager Platform container and Flag Bearer container references the aforementioned security group. Both containers reference AWS’s public Elastic Container Registry to use the latest image versions. Finally, the two containers connect to RDS and/or Elasticache, respectively.</p>
+          <p>The application load balancer is responsible for routing traffic through the Fána platform. The load balancer is configured with listener rules to target the Manager Dashboard for incoming traffic from developers and to target the Flag Bearer for incoming Client or Server SDK traffic. </p>
+          <figure>
+            <img src="assets/images/image48.png" alt="Fana's AWS cloud infrastructure includes a VPC, load balancer, ECS cluster with the Fana images, an RDS instance and a Elasticache cluster.">
+            <figcaption>Fig 7.2.3: Fana's final cloud architecture</figcaption>
+          </figure>
+          <p>Going back to Fána’s choice of using the Fargate service--as ECS is a container orchestration platform, which manages the life cycle and placement of the tasks or the instances of our docker images, the stack required compute resources to run those containers. The two options the team considered for hosting the containers were: EC2 or Fargate.</p>
+          <p>With EC2, the developer would need to deploy and manage a cluster of EC2 instances to run the relevant containers. While this allows for greater control over the machines, it increases the developer’s responsibility to provision, scale, and secure the EC2 instances.</p>
+          <p>The other option was Fargate. With Fargate, developers no longer need to manually provision and manage the compute instances. They can simply create a cluster and specify resources like CPU and memory. When the containers are deployed, Fargate will run and manage the servers to meet those requirements.</p>
+          <p>As it was important for the Fána platform to be an easily maintainable solution where the engineering team can focus more on the business needs rather than the task of managing the feature flag platform, the Fargate service was a more appropriate choice for hosting and deploying Fána’s stack.</p>
+          <br />
+
+        <!-- Section 8 -->
+        <h2>8 Engineering Decisions & Tradeoffs</h2>
         <br />
-        <div class="section team-section">
-          <div class="container">
-            <div data-duration-in="300" data-duration-out="100" class="tabs w-tabs">
-              <div data-w-id="8ce4324a-ed8e-4436-9964-0cfbaf67c64a"
-                style="transform: translate3d(0px, 55px, 0px) scale3d(1, 1, 1) rotateX(0deg) rotateY(0deg) rotateZ(0deg) skew(0deg, 0deg); transform-style: preserve-3d; opacity: 0;"
-                class="tabs-content w-tab-content">
-                <div>
-                  <div class="team-grid">
-                    <div class="team-member-wrap">
-                      <img
-                        src="assets/images/team/audry.png"
-                        loading="lazy"
-                        alt=""
-                      />
-                      <div class="team-member-info">
-                        <div class="team-member-name">Audry Hsu</div>
-                        <div class="team-member-location">Seattle, WA</div>
+        <p>
+          This section dives deeper into a few of the engineering decisions and tradeoffs the team made throughout Fána’s implementation.
+        </p>
+
+        <h3>8.1 SQL vs NoSQL</h3>
+        <p>One of the first engineering decisions encountered after prototyping Fána was to evaluate the data model and decide what type of database best fit the data’s characteristics.</p>
+        <h4>8.1.1 MongoDB</h4>
+        <p>The earliest iterations of Fána used MongoDB, a NoSQL document store. Initially, the lack of rigidly-defined schema helped facilitate a quicker setup and iteration for prototyping the minimal viable product (MVP). It was also easier for the Fána team to manipulate the seed data via Atlas, MongoDB’s cloud platform, which assisted with rapid testing.</p>
+        <p>As the team progressed through the implementation of the platform, the possibility of transitioning over to a relational database model was considered based on the following key characteristics of the data:
+        </p>
+        <ol>
+          <li><strong>Consistent structure:</strong> Flags contain audiences, which contain conditions, which contain attributes. </li>
+          <li><strong>Highly relational</strong>: Almost all operations executed on the data are cross-entity to serve the dashboard and the Flag Bearer. </li>
+          <li><strong>High utilization of joins for CRUD operations</strong>: The data model needs to reflect relationships between dynamic entities. For example, updating an audience means that the associated flags are affected.</li>
+        </ol>
+        <figure>
+          <img src="assets/images/sql_schema.png" alt="">
+          <figcaption>Fig 8.1.2: Flag data was highly relational and majority of data access patterns required SQL joins across tables.</figcaption>
+        </figure>
+        <p>As the implementation of data model evolved, the flexibility of MongoDB became less of an advantage, and a more intuitive expression of the relationships in the data became more attractive. While the flexibility of a document-model database made MongoDB a viable option, the team decided that the data access patterns, specifically for accessing flag entities and audience entities, lent themselves best to a relational database model.</p>
+        <h4>8.1.2 PostgreSQL</h4>
+        <p>SQL databases, on the other hand, more directly supported the relational nature of the data. Strict schemas support consistent entity models, normalized tables avoid redundancy and duplication, and optimized join queries fulfill the bulk of Fána's database operations. All of these advantages more immediately satisfied the application's data requirements.</p>
+        <p>With these facts in mind, the team concluded that a relational SQL database fits the data structure well. In the end, the open source option of PostgreSQL was chosen due to its versatility and accessibility.</p>
+        <h3>8.2 Decoupling Manager Responsibilities</h3>
+        <p>The initial MVP design for Fána consisted of just a Flag Manager with a rudimentary dashboard and database, as well as SDKs. This loaded several responsibilities onto the Manager:</p>
+        <ul>
+          <li>Handling all database CRUD operations</li>
+          <li>Serving the dashboard</li>
+          <li>Validating SDK initialization requests</li>
+          <li>Compiling the entire flag ruleset on each SDK initialization request</li>
+          <li>Maintaining SDK SSE connections to provide real-time updates</li>
+        </ul>
+        <figure>
+          <img src="assets/images/image31.gif" alt="">
+          <figcaption>Fig 8.2: Depiction of initial architecture before separating concerns: Manager backend handling multiple responsibilities.</figcaption>
+        </figure>
+     
+        <p>This aggregation of responsibilities presented an opportunity for decoupling. Separating concerns would reduce the overall complexity of the Manager as well as accommodate scaling individual components as needed. </p>
+        <h4>8.2.1 Decoupling SDK Connections</h4>
+        <p>In the initial design, the Manager was responsible for SDK communication, including initializations and SSE streaming. This meant that every SDK that was initialized needed to request flag data from the Manager to spin up properly. The Manager was also responsible for sending out push events to an SSE stream for every connected SDK when an update was made. </p>
+        <p>As the number of connected SDKs increased, the potential for the Manager to become inundated with requests also increased, which introduced a bottleneck risk. To offload the responsibility of managing SDK communication, the Fána team built the Flag Bearer component</p>
+        <figure>
+          <img src="assets/images/image34.gif" alt="">
+          <figcaption>Fig 8.2.1: First evolution of architecture after separating out the responsibility for managing SDK connections to the Flag Bearer.</figcaption>
+        </figure>
+        <p>The Flag Bearer acts as an intermediary between the SDK and the Manager. It handles the responsibility of initializing SDKs and maintaining SSE connections. Since it is decoupled from the Manager, it can be scaled on its own, as needed.</p>
+        <p>While adding another component to our architecture adds structural complexity, being able to ease the burden on the Manager was worth the tradeoff, especially since it makes scaling more feasible.</p>
+        <p>This relieved the Manager of directly communicating with SDKs, but this setup still required the Flag Bearer to reach out to the Manager to access the latest flag ruleset data whenever an SDK connected to the Flag Bearer. This challenge led to the next step in the architecture evolution of decoupling data provisioning.</p>
+        <h4>8.2.2 Decoupling Data Provisioning</h4>
+        <p>The PostgreSQL database is Fána’s source of truth and is controlled by the Manager. However, the Flag Bearer needs to read this data fairly often to initialize SDKs.
+        </p>
+        <p>As new flags and audiences are created, the size of the overall ruleset payload increases. Since the payload needs to be sent every time an SDK initializes, this creates more work for the Manager as it needs to compile the data into the overall ruleset from the database on every request. Larger data payloads also naturally take longer to reach their destination.</p>
+        <p>The Fána team considered having the Flag Bearer hold its own copy of the flag ruleset data in-memory. However, it was ultimately decided to decouple this responsibility further to preserve the Flag Bearer’s ability to independently scale by storing the flag data in a data store.</p>
+        <figure>
+          <img src="assets/images/image46.gif" alt="">
+          <figcaption>Fig 8.2.2a: Second evolution of architecture after separating out the data layer via a Redis cluster to reduce load on Manager and PostgreSQL database.</figcaption>
+        </figure>
+        <p>Instead of having the Flag Bearer manage its own flag ruleset or reach out to the Manager every time it needed the data, a Redis data store layer was implemented to reduce read requests to the database. Every time a write operation is made to the database from the developer dashboard, the Manager refreshes the data store with the latest compiled flag ruleset.</p>
+        <p>The Flag Bearer is now able to ping the data store instead of the Manager, easing the load. The Manager’s responsibilities have been pared down to managing flag data and serving the dashboard. The Manager only needs to compile the flag ruleset data whenever a change is made, rather than every time an SDK is initialized.</p>
+        <figure>
+          <img src="assets/images/image11.png" alt="">
+          <figcaption>Fig 8.2.2b: If Redis is unavailable or unreachable, the Flag Bearer defaults to requesting flag data from the Manager backend. This ensure SDK requests for flag data are unimpeded.</figcaption>
+        </figure>
+        <p> A degree of fault tolerance was also built into the Redis data store workflow. If the data store is unavailable, the Flag Bearer will reach out to the Manager for a copy of the data. When a request comes from the Bearer, it implies a fault with the data store, and the Manager will attempt to repopulate it.  This fault tolerance adds a layer of assurance that SDKs can still receive the necessary flag data on initializations, even if the data store is unavailable or unreachable.</p>
+        
+        <h3>8.3 Communicating Between Components</h3>
+        <br />
+        <p>One of the primary requirements driving the inter-component communication decisions was enabling real-time evaluation of the flag data. The reason real-time updates are critical to Fána goes back to the core dynamic for choosing a feature flag platform for testing in production in the first place. Specifically, if something goes wrong with a feature deployment, that issue’s impact on users is a function of the response time to addressing that issue. In other words, rolling back bad code as soon as possible is essential.</p> 
+        <p>The data’s distribution journey can be broken down into two parts: the first step was getting the flag rules from the database to the Flag Bearer nodes, and the second step was getting those flag rules out to the SDKs.</p>
+        <h4>8.3.1 Manager to Flag Bearer Communication</h4>
+        <p>The Manager needs some way to communicate updates to the Flag Bearer in real-time. Three options that were explored for this were API requests, Webhooks, and Publisher/Subscriber messaging.</p>
+        <h5>API Requests</h5>
+        <p>One approach to serving the Flag Bearer would be to establish the Manager as an API server to respond to requests from the Flag Bearer. This is a well-established pattern but it came with some tradeoffs:</p>
+        <ul>
+          <li>Manager would still be required to serve every request for flag rule data, which compounds its responsibilities and increases queries to the database.</li>
+          <li>The Flag Bearer does not have a way of knowing when updates are made to the flag rule set. This means that the Flag Bearer needs to make requests to the Manager to ensure that the most current rule set is being served whenever a new SDK request comes in. Additionally, Flag Bearer would not have access to any rule set updates in real time.</li>
+        </ul>
+        <figure>
+          <img src="assets/images/case_visuals/api_comms.png" alt="API Model">
+          <figcaption>Fig 8.3.1a: Consumer must initiate communication and wait for a response from the API Server</figcaption>
+        </figure>
+        <h5>Webhooks</h5>
+        <p>The first iterations of Fána utilized webhooks for event-driven communication between the Manager and Flag Bearer. With webhooks, Flag Bearer was able to maintain a copy of the most current rule set in-memory, eliminating the need to make requests to the Manager at every SDK request. However, in order to accommodate different types of events (i.e., flag and audience updates versus simple flag toggle updates), the design would need to consider the following:</p>
+        
+        <ul>
+          <li>Creating multiple URI endpoints to distinguish flag rule updates from flag toggle updates; or</li>
+          <li>Providing the entire flag data within the payload for each updates, which would impose an additional computational load on the Flag Bearer to parse and determine what update has been made to the flag rule set.</li>
+        </ul>
+         
+        <p>While webhooks allow the Flag Bearer to receive real-time updates and reduce traffic to the Manager, it still adds complexity to the Flag Bearer to handle ingesting and distributing of event notifications.</p>
+        <figure>
+          <img src="assets/images/case_visuals/webhooks.png" alt="Webhooks Model">
+          <figcaption>Fig 8.3.1b: Communication is unidirectional and data is pushed from the Producer to Consumer</figcaption>
+        </figure>
+        
+        <h5>Publisher/Subscriber Model</h5>
+        <figure>
+          <img src="assets/images/case_visuals/pubsub_generic.png" alt="pubsub model">
+          <figcaption>Fig 8.3.1c: A Publish Subscribe model allows messages to be broadcast asyncrhonously to many subscribers</figcaption>
+        </figure>
+        <p>The pub/sub model is another event-driven approach that decouples the message sender from the message consumer by introducing a separate component between them. In Fána’s case, the Manager was the publisher and the Flag Bearer was the subscriber. Placing the pub/sub in between the Manager and the Flag Bearer met two main criteria:</p>
+        <ul>
+          <li>Achieving real-time, event-driven communication for flag updates.</li>
+          <li>Handling different types of updates through the use of message topics or channels</li>
+        </ul>
+        
+        <p>Additionally, this architecture minimized the communication responsibilities and dependencies of the Manager and the Flag Bearer components, allowing greater flexibility and ability to independently scale as needed.</p>
+        <figure>
+          <img src="assets/images/case_visuals/pubsub_fana.png" alt="Fana's pubsub">
+          <figcaption></figcaption>
+        </figure>
+         
+        <p>Once the Flag Bearer subscribes to receive real-time event notifications, it would need a way to communicate them to the SDKs. The following sections will discuss the different options considered to facilitate this final leg of the communication.</p>
+        
+        <h4>8.3.2 Flag Bearer to SDK Communication</h4>
+        <p>Three options were considered for the SDKs to be able to retrieve the latest set of flag data from the Flag Bearer: polling, WebSockets, and SSE.</p>
+        <h5>Polling</h5>
+        <p>With polling, the SDK makes requests for updated data from the Flag Bearer at a specified interval. For example, setting the polling interval to 30 seconds, all connected SDKs will ping the Flag Bearer every 30 seconds, and the Bearer would provide each of them with the newest ruleset. </p>
+        <figure>
+          <img src="assets/images/case_visuals/polling.png" alt="Polling Model">
+          <figcaption>Fig 8.3.2a: Client periodically sends requests to Server to check for new data</figcaption>
+        </figure>
+        
+        
+        <p>Since updates are only reflected at the interval points, this is not truly a real-time solution. The majority of the polling requests may end up being unnecessary since they could just be fetching the same set of data for extended periods. It may also be a significant load on the Bearer, considering that the number of connected SDKs can be quite high, depending on the number of applications utilizing Fana’s SDKs.</p>
+        <h5>WebSockets</h5>
+        <p>A WebSocket is a full-duplex (bi-directional) communication channel between a client application and a server. After the client’s connection request is accepted by the server, they can now freely communicate.</p>
+        
+        <p>While this does allow for real-time updates, the bi-directional communication is not necessary--only the Flag Bearer needs to relay information to the SDKs. Additionally, WebSockets does not automatically attempt to reconnect if the connection is dropped.</p>
+        <figure>
+          <img src="assets/images/case_visuals/websockets.png" alt="WebSockets Model">
+          <figcaption>Fig 8.3.2b: Client and Server can both initiate communication</figcaption>
+        </figure>
+        
+        <h5>SSE</h5>
+        <p>Last, SSEs are similar to WebSockets in that they open a persistent connection between a client application and server, except SSEs are uni-directional. They also have built-in support for re-establishing dropped connections every 60 seconds. The combination of these traits made SSEs the most appropriate real-time communication mechanism for sending flag updates from the Flag Bearer to the SDKs. </p>
+        <figure>
+          <img src="assets/images/case_visuals/sse.png" alt="SSE Model">
+          <figcaption>Fig 8.3.2c: Clients subscribe to a stream of event messages generated by the Server when a new event occurs</figcaption>
+        </figure>
+        </br>
+        <!-- Section 9 -->
+        <h2>9 Summary & Future Work</h2>
+        <br />
+        <p>In summary, Fána provides a lightweight, easy-to-manage feature flagging platform that enables developers to test their features in production by creating flexible and reusable audiences to target their feature release to. This gives developers the control and confidence to gradually release a feature to more and more users over time. </p>
+        <p>The team recognizes that there is potential for improvement in Fána’s functionality. The following are some additional improvements to consider in the future that could add value to developers utilizing Fána.</p>
+        
+        <h3>9.1 Edge Computing</h3>
+        <p>In a future iteration of Fána’s cloud architecture, the SDK initialization times could be optimized by leveraging edge computing via a network of servers provided by content delivery networks (CDNs). Instead of connecting to the Flag Bearer, SDKs can connect to the nearest CDN node to retrieve flag evaluations. A serverless function that runs at the edge, such as an AWS Lambda@Edge or Cloudflare Worker, could execute the flag evaluation logic much closer to the SDK, reducing overall latency. This node could also access flag data closer to the edge, such as from AWS CloudFront or a Cloudflare K/V. The result is a lower-latency round-trip for initializations, which could boost loading speeds for applications utilizing Fána.</p>
+        
+        <p>When implementing this strategy, LaunchDarkly saw a 10x improvement in connection speed performance when leveraging their CDN, from 250ms per initialization down to 25ms.<sup class="c23 c15"><a href="#ftnt8" id="ftnt_ref8">[8]</a></sup></p>
+        
+        <h3>9.2 Supporting Multiple Environments</h3>
+        <p>Some feature flag service providers offer the ability to create multiple environments (such as development, staging, and production) for each flag. This can be useful in situations where a developer wants to test changes to the flag’s targeting logic in an environment without affecting the flag status that is live in the production environment.</p>
+        
+        <p>While Fána’s current design does not support SDK key creation for specific environments, users can still leverage Fána’s flexibility to duplicate a flag and limit the audience to test groups. While this can be worked around via creating test flags or even rolling out another instance of the architecture, multiple environments could add more convenience for the developers. </p>
+        
+        <h3>9.3 Collecting Metrics</h3>
+        <p>Some feature flag platforms offer flag-related metric collection to support more robust management of feature flags. For example, a developer could see how many times a flag was evaluated in the code as well as the count of true or false results. The developer may also be able to see the date the flag was last evaluated.</p>
+        
+        <p>This kind of data in a flag management platform would make it easier for developers to manage technical debt by more easily identifying feature flags that are no longer in use or do not need to remain in the codebase. By leveraging these metrics, developers could create workflows to periodically remove flags from features that transition from experimental or temporary to permanent after a feature has been successfully released to the general audience for a certain amount of time. To accommodate metric collection in the future, a data pipeline from the SDKs to the Manager can be set up to centralize and analyze this data. </p>
+        
+        <br />
+  
+          <!-- References -->
+          <h2>References</h2>
+          <div>
+            <p style="text-align: left"><a href="#ftnt_ref1" id="ftnt1">[1]</a> Ejsmont, A. (2015). In Web scalability for Startup Engineers: Tips &amp; Techniques for Scaling Your Web Application (p. 333). book, McGraw-Hill Education.</p>
+         </div>
+         <div>
+            <p style="text-align: left"><a href="#ftnt_ref2" id="ftnt2">[2]</a> Clemson, T. (2022, November 18). Testing strategies in a microservice architecture. martinfowler.com. Retrieved August 21, 2022, from https://martinfowler.com/articles/microservice-testing/ </p>
+         </div>
+         <div>
+            <p style="text-align: left"><a href="#ftnt_ref3" id="ftnt3">[3]</a> Stokes, S. (2016, July 11). Move fast with confidence. Coding with Honour. Retrieved August 21, 2022, from https://blog.samstokes.co.uk/blog/2016/07/11/move-fast-with-confidence/ </p>
+         </div>
+         <div>
+            <p style="text-align: left"><a href="#ftnt_ref4" id="ftnt4">[4]</a> Stokel-Walker, C. (2019, August 23). What broke the bank. Increment. Retrieved August 21, 2022, from https://increment.com/testing/what-broke-the-bank/ </p>
+         </div>
+         <div>
+            <p style="text-align: left"><a href="#ftnt_ref5" id="ftnt5">[5]</a> Wong, K. (2020, June 1). Using feature flags to enable nearly continuous deployment for mobile apps. Medium. Retrieved August 21, 2022, from https://medium.com/vmware-end-user-computing/using-feature-flags-to-enable-nearly-continuous-deployment-for-mobile-apps-b6d0940657ff </p>
+         </div>
+         <div>
+            <p style="text-align: left"><a href="#ftnt_ref6" id="ftnt6">[6]</a> LaunchDarkly. (2022, August 19). Atlassian case study. LaunchDarkly. Retrieved August 21, 2022, from https://launchdarkly.com/case-studies/atlassian/ </p>
+         </div>
+         <div>
+            <p style="text-align: left"><a href="#ftnt_ref7" id="ftnt7">[7]</a> Featurehub. (n.d.). Featurehub architecture - FeatureHub Docs. Retrieved August 21, 2022, from https://docs.featurehub.io/featurehub/latest/architecture.html#_nats </p>
+         </div>
+         <div>
+            <p style="text-align: left"><a href="#ftnt_ref8" id="ftnt8">[8]</a> LaunchDarkly. (2022, August 19). Evolving Global Flag Delivery - flag delivery at edge. LaunchDarkly. Retrieved August 21, 2022, from https://launchdarkly.com/blog/flag-delivery-at-edge/ </p>
+         </div>
+          <br>
+          <!-- <h2>Presentation</h2>
+          <div class="presentation-wrapper case-study-image">
+
+            <iframe class="presentation-video round-shadow" frameborder="0" src=""
+              allowfullscreen></iframe>
+          </div class="presentation-wrapper">
+          <br> -->
+          <h2>Team</h2>
+          <br />
+          <div class="section team-section">
+            <div class="container">
+              <div data-duration-in="300" data-duration-out="100" class="tabs w-tabs">
+                <div data-w-id="8ce4324a-ed8e-4436-9964-0cfbaf67c64a"
+                  style="transform: translate3d(0px, 55px, 0px) scale3d(1, 1, 1) rotateX(0deg) rotateY(0deg) rotateZ(0deg) skew(0deg, 0deg); transform-style: preserve-3d; opacity: 0;"
+                  class="tabs-content w-tab-content">
+                  <div>
+                    <div class="team-grid">
+                      <div class="team-member-wrap">
+                        <img
+                          src="assets/images/team/audry.png"
+                          loading="lazy"
+                          alt=""
+                        />
+                        <div class="team-member-info">
+                          <div class="team-member-name">Audry Hsu</div>
+                          <div class="team-member-location">Seattle, WA</div>
+                        </div>
+                        <ul class="team-member-icons">
+                          <li>
+                            <a href="mailto:audry.hsu@gmail.com" target="_blank">
+                              <span class="team-member-icon">
+                                <i class="fas fa-envelope"></i>
+                              </span>
+                            </a>
+                          </li>
+                          <li>
+                            <a href="https://www.audryhsu.com" target="_blank">
+                              <span class="team-member-icon">
+                                <i class="fas fa-globe"></i>
+                              </span>
+                            </a>
+                          </li>
+                          <li>
+                            <a
+                              href="https://www.linkedin.com/in/audry-hsu"
+                              target="_blank"
+                            >
+                              <span class="team-member-icon">
+                                <i class="fab fa-linkedin"></i>
+                              </span>
+                            </a>
+                          </li>
+                        </ul>
                       </div>
-                      <ul class="team-member-icons">
-                        <li>
-                          <a href="mailto:audry.hsu@gmail.com" target="_blank">
-                            <span class="team-member-icon">
-                              <i class="fas fa-envelope"></i>
-                            </span>
-                          </a>
-                        </li>
-                        <li>
-                          <a href="https://www.audryhsu.com" target="_blank">
-                            <span class="team-member-icon">
-                              <i class="fas fa-globe"></i>
-                            </span>
-                          </a>
-                        </li>
-                        <li>
-                          <a
-                            href="https://www.linkedin.com/in/audry-hsu"
-                            target="_blank"
-                          >
-                            <span class="team-member-icon">
-                              <i class="fab fa-linkedin"></i>
-                            </span>
-                          </a>
-                        </li>
-                      </ul>
-                    </div>
-                    <div class="team-member-wrap">
-                      <img
-                        src="assets/images/team/juan.jpg"
-                        loading="lazy"
-                        alt=""
-                      />
-                      <div class="team-member-info">
-                        <div class="team-member-name">Juan Juy</div>
-                        <div class="team-member-location">Los Angeles, CA</div>
+                      <div class="team-member-wrap">
+                        <img
+                          src="assets/images/team/juan.jpg"
+                          loading="lazy"
+                          alt=""
+                        />
+                        <div class="team-member-info">
+                          <div class="team-member-name">Juan Juy</div>
+                          <div class="team-member-location">Los Angeles, CA</div>
+                        </div>
+                        <ul class="team-member-icons">
+                          <li>
+                            <a href="mailto:alexjuanjuy@gmail.com" target="_blank">
+                              <span class="team-member-icon">
+                                <i class="fas fa-envelope"></i>
+                              </span>
+                            </a>
+                          </li>
+                          <li>
+                            <a href="https://www.juanjuy.com/" target="_blank">
+                              <span class="team-member-icon">
+                                <i class="fas fa-globe"></i>
+                              </span>
+                            </a>
+                          </li>
+                          <li>
+                            <a
+                              href="https://www.linkedin.com/in/juanjuy/"
+                              target="_blank"
+                            >
+                              <span class="team-member-icon">
+                                <i class="fab fa-linkedin"></i>
+                              </span>
+                            </a>
+                          </li>
+                        </ul>
                       </div>
-                      <ul class="team-member-icons">
-                        <li>
-                          <a href="mailto:alexjuanjuy@gmail.com" target="_blank">
-                            <span class="team-member-icon">
-                              <i class="fas fa-envelope"></i>
-                            </span>
-                          </a>
-                        </li>
-                        <li>
-                          <a href="https://www.juanjuy.com/" target="_blank">
-                            <span class="team-member-icon">
-                              <i class="fas fa-globe"></i>
-                            </span>
-                          </a>
-                        </li>
-                        <li>
-                          <a
-                            href="https://www.linkedin.com/in/juanjuy/"
-                            target="_blank"
-                          >
-                            <span class="team-member-icon">
-                              <i class="fab fa-linkedin"></i>
-                            </span>
-                          </a>
-                        </li>
-                      </ul>
-                    </div>
-                    <div class="team-member-wrap">
-                      <img
-                        src="assets/images/team/rob.jpg"
-                        loading="lazy"
-                        alt=""
-                      />
-                      <div class="team-member-info">
-                        <div class="team-member-name">Rob Gorman</div>
-                        <div class="team-member-location">Boston, MA</div>
+                      <div class="team-member-wrap">
+                        <img
+                          src="assets/images/team/rob.jpg"
+                          loading="lazy"
+                          alt=""
+                        />
+                        <div class="team-member-info">
+                          <div class="team-member-name">Rob Gorman</div>
+                          <div class="team-member-location">Boston, MA</div>
+                        </div>
+                        <ul class="team-member-icons">
+                          <li>
+                            <a
+                              href="mailto:gorman.rob.j@gmail.com"
+                              target="_blank"
+                            >
+                              <span class="team-member-icon">
+                                <i class="fas fa-envelope"></i>
+                              </span>
+                            </a>
+                          </li>
+                          <li>
+                            <a href="https://robgorman.com" target="_blank">
+                              <span class="team-member-icon">
+                                <i class="fas fa-globe"></i>
+                              </span>
+                            </a>
+                          </li>
+                          <li>
+                            <a
+                              href="https://www.linkedin.com/in/robjgorman/"
+                              target="_blank"
+                            >
+                              <span class="team-member-icon">
+                                <i class="fab fa-linkedin"></i>
+                              </span>
+                            </a>
+                          </li>
+                        </ul>
                       </div>
-                      <ul class="team-member-icons">
-                        <li>
-                          <a
-                            href="mailto:gorman.rob.j@gmail.com"
-                            target="_blank"
-                          >
-                            <span class="team-member-icon">
-                              <i class="fas fa-envelope"></i>
-                            </span>
-                          </a>
-                        </li>
-                        <li>
-                          <a href="https://robgorman.com" target="_blank">
-                            <span class="team-member-icon">
-                              <i class="fas fa-globe"></i>
-                            </span>
-                          </a>
-                        </li>
-                        <li>
-                          <a
-                            href="https://www.linkedin.com/in/robjgorman/"
-                            target="_blank"
-                          >
-                            <span class="team-member-icon">
-                              <i class="fab fa-linkedin"></i>
-                            </span>
-                          </a>
-                        </li>
-                      </ul>
-                    </div>
-                    <div class="team-member-wrap">
-                      <img
-                        src="assets/images/team/yoorhim.jpg"
-                        loading="lazy"
-                        alt=""
-                      />
-                      <div class="team-member-info">
-                        <div class="team-member-name">Yoorhim Choi</div>
-                        <div class="team-member-location">New York, NY</div>
+                      <div class="team-member-wrap">
+                        <img
+                          src="assets/images/team/yoorhim.jpg"
+                          loading="lazy"
+                          alt=""
+                        />
+                        <div class="team-member-info">
+                          <div class="team-member-name">Yoorhim Choi</div>
+                          <div class="team-member-location">New York, NY</div>
+                        </div>
+                        <ul class="team-member-icons">
+                          <li>
+                            <a href="mailto:choi.yoorhim@gmail.com" target="_blank">
+                              <span class="team-member-icon">
+                                <i class="fas fa-envelope"></i>
+                              </span>
+                            </a>
+                          </li>
+                          <li>
+                            <a href="https://www.yoorhim.com" target="_blank">
+                              <span class="team-member-icon">
+                                <i class="fas fa-globe"></i>
+                              </span>
+                            </a>
+                          </li>
+                          <li>
+                            <a
+                              href="https://www.linkedin.com/in/yoorhimchoi/"
+                              target="_blank"
+                            >
+                              <span class="team-member-icon">
+                                <i class="fab fa-linkedin"></i>
+                              </span>
+                            </a>
+                          </li>
+                        </ul>
                       </div>
-                      <ul class="team-member-icons">
-                        <li>
-                          <a href="mailto:choi.yoorhim@gmail.com" target="_blank">
-                            <span class="team-member-icon">
-                              <i class="fas fa-envelope"></i>
-                            </span>
-                          </a>
-                        </li>
-                        <li>
-                          <a href="https://www.yoorhim.com" target="_blank">
-                            <span class="team-member-icon">
-                              <i class="fas fa-globe"></i>
-                            </span>
-                          </a>
-                        </li>
-                        <li>
-                          <a
-                            href="https://www.linkedin.com/in/yoorhimchoi/"
-                            target="_blank"
-                          >
-                            <span class="team-member-icon">
-                              <i class="fab fa-linkedin"></i>
-                            </span>
-                          </a>
-                        </li>
-                      </ul>
-                    </div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-        <br>
-        <br>
+          <br>
+          <br>
+    </div>
+  </article>
   </div>
   <script src="https://d3e54v103j8qbb.cloudfront.net/js/jquery-3.5.1.min.dc5e7f18c8.js?site=5f71dd169010d641cf65485c"
     type="text/javascript" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0="
