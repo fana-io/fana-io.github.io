@@ -1756,8 +1756,7 @@ a:hover {
   }
 
   .template-logo {
-    max-width: 50px;
-    width: 100%;
+    max-width: 30px;
   }
 
   .nav-menu {
@@ -1865,11 +1864,19 @@ a:hover {
 }
 
 @media screen and (max-width: 990px) {
-  .template-logo {
-    max-width: 50px;
+  #case-study {
     width: 100%;
+    padding: 0 1%;
   }
+  #sidebar {
+    visibility: hidden;
+    opacity: 0;
+    /* transition: visibility 0s, opacity 0.5s linear; */
+  }
+}
 
+
+@media screen and (max-width: 900px) {
   #sidebar {
     visibility: hidden;
     opacity: 0;
