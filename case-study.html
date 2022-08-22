@@ -78,7 +78,7 @@
         <div class="hero-text-container">
           <div id="case-study">
           <h1 class="h1 centered">Case Study</h1>
-          </br >
+          <br >
           <!-- Section 1 -->
           <h2 class="h2">1 Introduction</h2>
           <br>
@@ -120,7 +120,7 @@
            </ul>
           </p>
           <figure>
-            <img alt="" src="assets/images/image23.png" style="width: 332.49px; height: 251.50px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);" title="charity majors quote">
+            <img alt="" src="assets/images/image23.png" title="charity majors quote">
           </figure>
           <br />
           <p>
@@ -332,7 +332,7 @@
             <li>a package embedded in the application to execute the appropriate flagged features within the application.</li>
           </ul>
           <figure>
-            <img alt="" src="assets/images/image19.png" title="" style="max-width: 500px;">
+            <img alt="" src="assets/images/image19.png" title="">
             <figcaption>Fig 5.1: Minimum necessary components to build an in-house feature flag solution</figcaption>
           </figure>
           <p>Going the DIY route is a viable option, however, building a bootstrapped feature flagging system poses many challenges. For example, Atlassian built its own system primarily to control feature releases. As more teams wanted to use the in-house solution, developing and maintaining the solution became unwieldy. In addition, the system was not designed for users outside the development team. Without a user interface, teams outside of engineering, such as Product Management, had to rely on the engineering teams to manage flags and run beta tests<sup class="c15"><a href="#ftnt6">[6]</a></sup>.</p>
@@ -362,16 +362,16 @@
           <br />
           <p>
             A developer team looking for a high degree of flexibility and customization can opt for open source solutions to bootstrap a DIY feature flag implementation or build an in-house solution completely from the ground up. While flexible and customizable, the DIY route may carry a higher cost in the way of engineering resources and time.</p><p>For broad and proven functionality out of the box, a developer team can consider enterprise solutions like LaunchDarkly. However, some tradeoffs with using third-party services include:</p>
-<ul>
-  <li>Cost: Certain features like targeting specific audiences are accessible through a monthly fee.</li>
-  <li>Data privacy: Potentially exposing user data or company data to a third-party database.</li>
-</ul><figure>
-  <img alt="" src="assets/images/image28.png" title="">
-  <figcaption>Fig 5.4: Comparison between DIY and paid feature flagging solutions</figcaption>
-</figure>
-<p>For a smaller, budget-conscious developer team that needs audience targeting functionality for testing in production out of the box and prioritizes data privacy, an enterprise solution may not meet their needs.</p>
-<p>The next section introduces a Fána, an alternative feature flagging solution.</p>
-  
+          <ul>
+            <li>Cost: Certain features like targeting specific audiences are accessible through a monthly fee.</li>
+            <li>Data privacy: Potentially exposing user data or company data to a third-party database.</li>
+          </ul><figure>
+            <img alt="" src="assets/images/image28.png" title="">
+            <figcaption>Fig 5.4: Comparison between DIY and paid feature flagging solutions</figcaption>
+          </figure>
+          <p>For a smaller, budget-conscious developer team that needs audience targeting functionality for testing in production out of the box and prioritizes data privacy, an enterprise solution may not meet their needs.</p>
+          <p>The next section introduces a Fána, an alternative feature flagging solution.</p>
+            
           <!-- Section 6 -->
           <h2>6 Fána</h2>
           <br />
@@ -394,7 +394,7 @@
           <h5>Creating an Attribute in the Fána Dashboard</h5>
           <p>Below is an example of the Fána dashboard creating three new attributes, one of each data type. </p>
           <figure>
-            <iframe width="560" height="315" src="https://www.youtube.com/embed/2dfDe3ZgLkg" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen class="round-shadow"></iframe>
+            <iframe src="https://www.youtube.com/embed/2dfDe3ZgLkg" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen class="round-shadow"></iframe>
             <figcaption>Fig 6.1.1: Creating attribute using the Fána Dashboard</figcaption>
           </figure>
           <h5>User Context</h5>
@@ -420,7 +420,7 @@
           <h5>Creating an Audience in the Fána Dashboard</h5>
           <p>Below is an example of the Fána Dashboard creating a new audience called West Coast Students that has two conditions with an <code>all</code> combination. To qualify for this audience, the user context must meet all conditions: <code>student</code> attribute set to <code>true</code>, and <code>state</code> attribute set to one of  <code>CA</code>, <code>WA</code>, or <code>OR</code>.</p>
           <figure>
-            <iframe width="560" height="315" src="https://www.youtube.com/embed/8jahB63zlKk" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen class="round-shadow"></iframe>
+            <iframe src="https://www.youtube.com/embed/8jahB63zlKk" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen class="round-shadow"></iframe>
             <figcaption>Fig 6.1.3: Creating an audience in the Fána Dashboard</figcaption>
           </figure>
           <p>After creating an audience, the Fána user can target it when creating and configuring their flags. </p>
@@ -435,7 +435,7 @@
           <h5>Creating a Flag in the Fána Dashboard</h5>
           <p>Below is an example of the Fána Dashboard creating a new flag to target the previously created West Coast Students audience.</p>
           <figure>
-            <iframe width="560" height="315" src="https://www.youtube.com/embed/N2FZ59VGXjc" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen class="round-shadow"></iframe>
+            <iframe src="https://www.youtube.com/embed/N2FZ59VGXjc" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen class="round-shadow"></iframe>
           </figure>
           <figcaption>Fig 6.1.4: Creating a flag in the Fána Dashboard</figcaption>
           <p>Once a flag is created, the developer can use the flag key in their code when calling the evaluateFlag method, provided by the Fána SDK (more about SDKs in <a href="#sdk-section">section 6.6</a>). </p>
@@ -597,9 +597,9 @@
           <p>Developers can also deploy using Fána’s docker-compose.yml file, which will configure and launch the platform in a single Docker network. In this network, the built-in DNS resolution and service definitions in the YAML file will allow the containers to communicate with each other as required. </p>
 
           <figure>
-            <img src="assets/images/image17.png" alt="docker-yaml-file" style="max-width: 225px;">
-            <img src="assets/video/terminal/docker_compose_terminal.gif" alt="docker-compose-up" class="round-shadow" style="max-width: 350px;">
-            <img src="assets/images/image7.png" alt="docker-network" style="max-width: 350px;">
+            <img src="assets/images/image17.png" alt="docker-yaml-file">
+            <img src="assets/video/terminal/docker_compose_terminal.gif" alt="docker-compose-up" class="round-shadow">
+            <img src="assets/images/image7.png" alt="docker-network">
             <figcaption>Fig 7.1b: Docker Compose spins up all services necessary to run Fana in a Docker Network.</figcaption>
           </figure>
           <p>The <code>docker-compose.yml</code> file references Fána’s latest images for each component as well as utilizing the latest and maintained Redis and PostgreSQL images, which are defined to start up in their dependency order. Developers can configure the necessary administrative variables as well as expose necessary host and port endpoints in the environment file to deploy Fána.</p>
@@ -771,7 +771,7 @@
           <img src="assets/images/case_visuals/sse.png" alt="SSE Model">
           <figcaption>Fig 8.3.2c: Clients subscribe to a stream of event messages generated by the Server when a new event occurs</figcaption>
         </figure>
-        </br>
+        <br>
         <!-- Section 9 -->
         <h2>9 Summary & Future Work</h2>
         <br />
@@ -997,6 +997,8 @@
           </div>
           <br>
           <br>
+        </div>
+      </div>
     </div>
   </article>
   </div>
