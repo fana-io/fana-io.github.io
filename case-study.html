@@ -394,10 +394,10 @@
           <p>After creating an attribute, Fána users can include it when creating and configuring their audiences.</p>
           <h5>Creating an Attribute in the Fána Dashboard</h5>
           <p>Below is an example of the Fána dashboard creating three new attributes, one of each data type. </p>
-          <figure>
-            <iframe src="https://www.youtube.com/embed/2dfDe3ZgLkg" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen class="round-shadow"></iframe>
-            <figcaption>Fig 6.1.1: Creating attribute using the Fána Dashboard</figcaption>
-          </figure>
+          <div class="presentation-wrapper case-study-image">
+            <iframe class="presentation-video" frameborder="0" src="https://www.youtube.com/embed/2dfDe3ZgLkg"
+            allowfullscreen></iframe>
+          </div>
           <h5>User Context</h5>
           <p>A user context is an object composed of attributes-value pairs and is defined within the Fána user’s application code to provide relevant information about a user. Note that the user context is developer-defined, so it can consist of any data that the developer has access to. For example, a user context can have attributes describing the user’s location, age, and whether they are a student. </p>
           <figure>
@@ -420,10 +420,10 @@
           </ul>
           <h5>Creating an Audience in the Fána Dashboard</h5>
           <p>Below is an example of the Fána Dashboard creating a new audience called West Coast Students that has two conditions with an <code>all</code> combination. To qualify for this audience, the user context must meet all conditions: <code>student</code> attribute set to <code>true</code>, and <code>state</code> attribute set to one of  <code>CA</code>, <code>WA</code>, or <code>OR</code>.</p>
-          <figure>
-            <iframe src="https://www.youtube.com/embed/8jahB63zlKk" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen class="round-shadow"></iframe>
-            <figcaption>Fig 6.1.3: Creating an audience in the Fána Dashboard</figcaption>
-          </figure>
+          <div class="presentation-wrapper case-study-image">
+            <iframe class="presentation-video" frameborder="0" src="https://www.youtube.com/embed/8jahB63zlKk"
+            allowfullscreen></iframe>
+          </div>
           <p>After creating an audience, the Fána user can target it when creating and configuring their flags. </p>
           <h4>6.1.3 Flags</h4>
           <p>Flags are the core entity of Fána. Each flag is meant to represent a specific feature that the Fána user wishes to test. They consist of four properties:</p>
@@ -435,9 +435,10 @@
           </ul>
           <h5>Creating a Flag in the Fána Dashboard</h5>
           <p>Below is an example of the Fána Dashboard creating a new flag to target the previously created West Coast Students audience.</p>
-          <figure>
-            <iframe src="https://www.youtube.com/embed/N2FZ59VGXjc" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen class="round-shadow"></iframe>
-          </figure>
+          <div class="presentation-wrapper case-study-image">
+            <iframe class="presentation-video" frameborder="0" src="https://www.youtube.com/embed/N2FZ59VGXjc"
+            allowfullscreen></iframe>
+          </div>
           <figcaption>Fig 6.1.4: Creating a flag in the Fána Dashboard</figcaption>
           <p>Once a flag is created, the developer can use the flag key in their code when calling the evaluateFlag method, provided by the Fána SDK (more about SDKs in <a href="#sdk-section">section 6.6</a>). </p>
           <p>The following sections will discuss the overall architecture, different components of Fána design in detail, and how these components communicate within an event-driven architecture to support real-time updates and audience targeting. </p>
@@ -823,13 +824,12 @@
             <p style="text-align: left"><a href="#ftnt_ref8" id="ftnt8">[8]</a> LaunchDarkly. (2022, August 19). Evolving Global Flag Delivery - flag delivery at edge. LaunchDarkly. Retrieved August 21, 2022, from https://launchdarkly.com/blog/flag-delivery-at-edge/ </p>
          </div>
           <br>
-          <!-- <h2>Presentation</h2>
+          <h2>Presentation</h2>
           <div class="presentation-wrapper case-study-image">
-
-            <iframe class="presentation-video round-shadow" frameborder="0" src=""
-              allowfullscreen></iframe>
-          </div class="presentation-wrapper">
-          <br> -->
+            <iframe class="presentation-video" frameborder="0" src="https://www.youtube.com/embed/upgAZyFN4PY"
+            allowfullscreen></iframe>
+          </div>
+          <br>
           <h2>Team</h2>
           <br />
           <div class="section team-section">
